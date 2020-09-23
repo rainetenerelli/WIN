@@ -1,5 +1,6 @@
 '''
 Project: Wushu Inventory Ninja
+Project Description: Weapons Database for Wellesley Wushu
 Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
 Course: CS304 Fall T1 2020
 '''
