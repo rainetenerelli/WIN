@@ -8,7 +8,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
 
 @app.route('/')
 def index():
-    return render_template('main.html',title='Hello')
+    return render_template('main.html')
 
 
 @app.before_first_request
