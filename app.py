@@ -21,12 +21,17 @@ def genmem():
 def eboard():
     return render_template('templates/eboard.html')
 
-@app.route('/weapons/')
+@app.route('/weapons/', methods=['GET','POST'])
 def weapons():
-    conn = dbi.connect()
-    allWeaponsList = filterweapons.getAllWeapons(conn)
-    return render_template('templates/showweapons.html', allWeaponsList)
-
+    if request.method == 'GET':
+        conn = dbi.connect()
+        allWeaponsList = filterweapons.getAllWeapons(conn)
+        return render_template('templates/showweapons.html', allWeaponsList)
+    else:
+        filterType = request.form.get("weapon-type")
+        filteredWeaponsList = filterweapons.filterByType(conn,filterType)
+        return render_template('templates/showweapons.html', filteredWeaponsList)
+    
 @app.route('/checkout/')
 def checkout():
     return render_template('templates/checkoutform.html')
