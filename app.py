@@ -6,6 +6,8 @@ Course: CS304 Fall T1 2020
 '''
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
+import filterweapons
+import updateinfo
 
 @app.route('/')
 def index():
@@ -21,7 +23,9 @@ def eboard():
 
 @app.route('/weapons/')
 def weapons():
-    return render_template('templates/showweapons.html')
+    conn = dbi.connect()
+    allWeaponsList = filterweapons.getAllWeapons(conn)
+    return render_template('templates/showweapons.html', allWeaponsList)
 
 @app.route('/checkout/')
 def checkout():
