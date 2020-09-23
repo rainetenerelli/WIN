@@ -1,0 +1,12 @@
+<!-- Author: Raine Tenerelli -->
+{% extends "base.html" %}
+
+{% block nav %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('browseweapons')}}">Browse Weapons</a></li>
+    <li><a href="{{url_for('checkinform')}}">Check In Weapon</a></li>
+    <li><a href="{{url_for('checkoutform')}}">Check Out Weapon</a></li>
+  </ul>
+</nav>
+{% endblock %}
