@@ -11,3 +11,4 @@ def filterByType(conn, type):
         where type=%s''',
                  [type])
     return curs.fetchall()
+
