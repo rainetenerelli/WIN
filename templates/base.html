@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta name="author" content="Eugenia, Elaney, and Raine">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    {% block head_stuff %} 
+    <title>WIN Login</title>
+    {% endblock %}
+</head>
+
+<body>
+    {% block top %}
+    <h1 id="login">Login Page</h1>
+    {% endblock %}
+
+    {% block main %}
+    <form method="POST" style="text-align: center;" action="">
+        <label for="username"><strong>Username: </strong></label>
+        <input required id="username" type="text" name="username" placeholder="">
+        <br><br>
+        <label for="password"><strong>Password: </strong></label>
+        <input required id="password" type="password" name="password">
+        <br><br>
+        <input type="submit" value="Submit">
+    </form>
+    {% endblock %}
+
+    {% block foot %}
+    {% endblock %}
+</body>
