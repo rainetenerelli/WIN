@@ -1,5 +1,20 @@
 {% extends "base.html" %}
 
-{% block main_content %}
+    {% block head_stuff %} 
+    <title>WIN Login</title>
+    <meta name="description" content="Login page for WIN">
+    {% endblock %}
 
-{% endblock %}
+    {% block top %}
+    <h1 id="login-header">Login Page</h1>
+    {% endblock %}
+
+    {% block main %}
+    <form method="POST" style="text-align: center;" action="">
+        <div id="login">
+            <label for="username"><strong>Username: </strong></label>
+            <input required id="username" type="text" name="username" placeholder="">
+        </div>
+        <input type="submit" value="Submit">
+    </form>
+    {% endblock %}

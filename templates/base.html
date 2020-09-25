@@ -2,24 +2,27 @@
 <head lang="en">
     <meta charset="utf-8">
     <meta name="author" content="Eugenia, Elaney, Christine, and Raine">
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel='stylesheet' type= "text/css" href="{{url_for('static', filename = 'style.css')}}">
     {% block head_stuff %} 
-    <title>WIN Login</title>
     {% endblock %}
 </head>
 
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div id="messages">
+            {% for msg in messages %}
+            <p>{{msg}}</p>
+             {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+
     {% block top %}
-    <h1 id="login">Login Page</h1>
     {% endblock %}
 
     {% block main %}
-    <form method="POST" style="text-align: center;" action="">
-        <label for="username"><strong>Username: </strong></label>
-        <input required id="username" type="text" name="username" placeholder="">
-        <br><br>
-        <input type="submit" value="Submit">
-    </form>
     {% endblock %}
 
     {% block foot %}
