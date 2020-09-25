@@ -1,4 +1,11 @@
-# Written by Elaney Cheng
+'''
+Project: Wushu Inventory Ninja
+Project Description: Weapons Database for Wellesley Wushu
+Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
+Course: CS304 Fall T1 2020
+'''
+# File Author: Elaney Cheng
+
 import cs304dbi as dbi
 
 def getAllWeapons(conn):
