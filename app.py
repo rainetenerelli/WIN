@@ -4,14 +4,33 @@ Project Description: Weapons Database for Wellesley Wushu
 Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
 Course: CS304 Fall T1 2020
 '''
+# File Author: Christine Lam
+
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
 import filterweapons
 import updateinfo
+import random
 
-@app.route('/')
+app.secret_key = 'your secret here'
+# replace that with a random key
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+@app.route('/', methods=['GET','POST'])
 def index():
-    return render_template('templates/base.html')
+    if request.method == 'GET':
+        return render_template('templates/base.html')
+    elif request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # check if username is correct
+        # redirect to either general or eboard
 
 @app.route('/genmem/')
 def genmem():
