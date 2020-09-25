@@ -8,9 +8,13 @@ Course: CS304 Fall T1 2020
 
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
+
+import cs304dbi as dbi
 import filterweapons
 import updateinfo
 import random
+
+app = Flask(__name__)
 
 app.secret_key = 'your secret here'
 # replace that with a random key
@@ -25,7 +29,7 @@ app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 @app.route('/', methods=['GET','POST'])
 def index():
     if request.method == 'GET':
-        return render_template('templates/base.html')
+        return render_template('main.html')
     elif request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -34,34 +38,34 @@ def index():
 
 @app.route('/genmem/')
 def genmem():
-    return render_template('templates/generalmember.html')
+    return render_template('generalmember.html')
 
 @app.route('/eboard/')
 def eboard():
-    return render_template('templates/eboard.html')
+    return render_template('eboard.html')
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
     if request.method == 'GET':
         conn = dbi.connect()
         allWeaponsList = filterweapons.getAllWeapons(conn)
-        return render_template('templates/showweapons.html', allWeaponsList)
+        return render_template('showweapons.html', allWeaponsList)
     else:
         filterType = request.form.get("weapon-type")
         filteredWeaponsList = filterweapons.filterByType(conn,filterType)
-        return render_template('templates/showweapons.html', filteredWeaponsList)
+        return render_template('showweapons.html', filteredWeaponsList)
     
 @app.route('/checkout/')
 def checkout():
-    return render_template('templates/checkoutform.html')
+    return render_template('checkoutform.html')
 
 @app.route('/checkin/')
 def checkin():
-    return render_template('templates/checkinform.html')
+    return render_template('checkinform.html')
 
 @app.route('/addmember/')
 def addmember():
-    return render_template('templates/newmember.html')
+    return render_template('newmember.html')
 
 @app.before_first_request
 def init_db():
@@ -77,3 +81,4 @@ if __name__ == '__main__':
         port = os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
+
