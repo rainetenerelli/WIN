@@ -32,9 +32,15 @@ def index():
         return render_template('main.html')
     elif request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
         # check if username is correct
         # redirect to either general or eboard
+        if (username == 'eboard'):
+            return redirect(url_for('eboard'))
+        elif (username == 'genmem'):
+            return redirect(url_for('genmem'))
+        else: # incorrect username
+            flash("Wrong usename. Please try again.")
+            return redirect(url_for('index'))
 
 @app.route('/genmem/')
 def genmem():
@@ -42,7 +48,7 @@ def genmem():
 
 @app.route('/eboard/')
 def eboard():
-    return render_template('eboard.html')
+    return render_template('eboardmember.html')
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
