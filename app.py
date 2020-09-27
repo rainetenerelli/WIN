@@ -39,7 +39,7 @@ def index():
         elif (username == 'genmem'):
             return redirect(url_for('genmem'))
         else: # incorrect username
-            flash("Wrong usename. Please try again.")
+            flash("Wrong username. Please try again.")
             return redirect(url_for('index'))
 
 @app.route('/genmem/')
@@ -57,9 +57,10 @@ def weapons():
         allWeaponsList = filterweapons.getAllWeapons(conn)
         return render_template('showweapons.html', allWeaponsList = allWeaponsList)
     else:
+        conn = dbi.connect()
         filterType = request.form.get("weapon-type")
         filteredWeaponsList = filterweapons.filterByType(conn,filterType)
-        return render_template('showweapons.html', filteredWeaponsList = filteredWeaponsList)
+        return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
     
 @app.route('/checkout/')
 def checkout():

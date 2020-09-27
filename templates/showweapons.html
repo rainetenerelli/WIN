@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+
+{% block main %}
+<form method="POST" action="/weapons/">
+    <label for="filter-label">Filter by: </label>
+    <select name="weapon-type" >
+        <option value="broadsword">Broadsword</option>
+        <option value="chain">Chain</option>
+        <option value="fan">Fan</option>
+        <option value="staff">Staff</option>
+        <option value="straightsword">Straightsword</option>
+    </select>
+    <input type="submit" value="Apply">
+</form>
+<table>
+    <tr>
+        <th class="weaponHead"><strong>ID</strong></th>
+        <th class="weaponHead"><strong>Type</strong></th>
+        <th class="weaponHead"><strong>Condition</strong></th>
+    </tr>
+    {% for weapon in allWeaponsList: %}
+    <tr>
+        <td class="weaponData">{{ weapon.wid }}</td>
+        <td class="weaponData">{{ weapon.type }}</td>
+        <td class="weaponData">{{ weapon.condition}}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
