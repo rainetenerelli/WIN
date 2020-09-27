@@ -40,7 +40,7 @@ def index():
             return redirect(url_for('genmem'))
         else: # incorrect username
             flash("Wrong username. Please try again.")
-            return redirect(url_for('index'))
+            return render_template('main.html')
 
 @app.route('/genmem/')
 def genmem():
@@ -65,17 +65,34 @@ def weapons():
             filteredWeaponsList += filterweapons.filterByType(conn,fType)
         return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
     
-@app.route('/checkout/')
+@app.route('/checkout/', methods=['GET','POST'])
 def checkout():
-    return render_template('checkoutform.html')
+    if request.method == 'GET':
+        return render_template('checkoutform.html')
+    else: # POST
+        # validation: is form complete? IF STATEMENT
+        flash("Oopsie. Your form is missing input. Try again!")
+            return render_template('checkoutform.html')
 
-@app.route('/checkin/')
+@app.route('/checkin/', methods=['GET','POST'])
 def checkin():
-    return render_template('checkinform.html')
+    if request.method == 'GET':
+        return render_template('checkinform.html')
+    else: # POST
 
-@app.route('/addmember/')
+@app.route('/addmember/', methods=['GET','POST'])
 def addmember():
-    return render_template('newmember.html')
+    if request.method == 'GET':
+        return render_template('newmember.html')
+    else: # POST
+        # validation: is form complete? IF STATEMENT
+        flash("Oopsie. Your form is missing input. Try again!")
+        return render_template('newmember.html')
+        # validation: is this member already in the database? IF STATEMENT
+        flash("Oh no. This member already exists. Try again!")
+        return render_template('newmember.html')
+        # all good! add member then redirect to checkout.
+        return redirect(url_for('checkout'))
 
 @app.before_first_request
 def init_db():
