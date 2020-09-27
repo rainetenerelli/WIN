@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 
+{% block head_stuff %} 
+    <title>Weapons</title>
+    <meta name="description" content="Displays all weapons and allows filtering">
+{% endblock %}
+
+{% block top %}
+    <h1 class="topHeader">Weapons</h1>
+{% endblock %}
 
 {% block main %}
-<form method="POST" action="/weapons/">
+<form method="POST" action="/weapons/" style="text-align: center; padding-bottom: 5px;">
     <label for="filter-label">Filter by: </label>
     <select name="weapon-type" >
         <option value="broadsword">Broadsword</option>
@@ -13,7 +21,7 @@
     </select>
     <input type="submit" value="Apply">
 </form>
-<table>
+<table id="weaponTable">
     <tr>
         <th class="weaponHead"><strong>ID</strong></th>
         <th class="weaponHead"><strong>Type</strong></th>

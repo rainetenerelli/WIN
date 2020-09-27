@@ -1,4 +1,4 @@
-#loginHeader {
+.topHeader {
     text-align: center;
 }
 
@@ -8,3 +8,7 @@
     padding: 8px;
 }
 
+#weaponTable {
+    margin-left: auto;
+    margin-right: auto;
+}
