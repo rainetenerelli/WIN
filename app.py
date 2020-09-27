@@ -59,7 +59,10 @@ def weapons():
     else:
         conn = dbi.connect()
         filterType = request.form.get("weapon-type")
-        filteredWeaponsList = filterweapons.filterByType(conn,filterType)
+        filterTypeSplit = filterType.split(" ")
+        filteredWeaponsList = []
+        for fType in filterTypeSplit:
+            filteredWeaponsList += filterweapons.filterByType(conn,fType)
         return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
     
 @app.route('/checkout/')
