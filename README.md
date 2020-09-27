@@ -1,5 +1,5 @@
-# WIN
-WIN, also known as the Wushu Inventory Ninja, will be a weapons inventory tracker and lender application that gathers the most needed and useful functionalities for Wellesley Wushu in a centralized location. WIN would have a database that would store the conditions, locations, and other related information of every weapon in Wellesley Wushu’s possession, and include features that would enhance the ease of checking in and checking out weapons and navigating Wushu’s weapons inventory.
+# Wushu Inventory Ninja (WIN)
+WIN will be a weapons inventory tracker and lender application that gathers the most needed and useful functionalities for Wellesley Wushu in a centralized location. WIN would have a database that would store the conditions, locations, and other related information of every weapon in Wellesley Wushu’s possession, and include features that would enhance the ease of checking in and checking out weapons and navigating Wushu’s weapons inventory.
 
 ### Primary Features
 - [ ] Updating data
