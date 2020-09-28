@@ -12,6 +12,7 @@ from flask import (Flask, render_template, make_response, url_for, request,
 import cs304dbi as dbi
 import filterweapons
 import updateinfo
+import updateinfo
 import random
 
 app = Flask(__name__)
@@ -70,28 +71,36 @@ def checkout():
     if request.method == 'GET':
         return render_template('checkoutform.html')
     else: # POST
-        # validation: is form complete? IF STATEMENT
-        flash("Oopsie. Your form is missing input. Try again!")
-            return render_template('checkoutform.html')
+        conn = dbi.connect()
+        wid = request.form["wid"]
+        email = request.form["email"]
+        checkoutdate = request.form["checkoutdate"]
+        checkOut(conn, wid, email, checkoutdate)
+        return redirect(url_for('weapons'))
+        
 
 @app.route('/checkin/', methods=['GET','POST'])
 def checkin():
     if request.method == 'GET':
         return render_template('checkinform.html')
     else: # POST
+        conn = dbi.connect()
+        wid = request.form["wid"]
+        email = request.form["email"]
+        checkindate = request.form["checkindate"]
+        checkoutdate = updateinfo.getCheckoutDate(conn, wid, email)
+        updateinfo.checkIn(conn, wid, email, checkoutdate, checkindate)
+        return redirect(url_for('weapons'))
 
 @app.route('/addmember/', methods=['GET','POST'])
 def addmember():
     if request.method == 'GET':
         return render_template('newmember.html')
     else: # POST
-        # validation: is form complete? IF STATEMENT
-        flash("Oopsie. Your form is missing input. Try again!")
-        return render_template('newmember.html')
-        # validation: is this member already in the database? IF STATEMENT
-        flash("Oh no. This member already exists. Try again!")
-        return render_template('newmember.html')
-        # all good! add member then redirect to checkout.
+        conn = dbi.connect()
+        name = request.form["newName"]
+        email = request.form["newEmail"]
+        updateinfo.addMember(conn, email, name)
         return redirect(url_for('checkout'))
 
 @app.before_first_request
