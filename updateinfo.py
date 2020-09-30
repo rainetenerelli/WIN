@@ -8,6 +8,17 @@ Course: CS304 Fall T1 2020
 
 import cs304dbi as dbi
 
+def getAvailableWeapons(conn, type):
+    '''
+    Return the wid of all weapons that are available to checkout of specified type
+    '''
+    curs = dbi.cursor(conn)
+    curs.execute('''
+                select wid from weapons 
+                where type=%s and wid not in (select wid from checkedout where checkindate is null)''',
+                [type])
+    return curs.fetchall()
+
 def checkOut(conn, wid, email, checkoutdate):
     '''
     Update the checkout table with the new checkout info
