@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block top %}
+    <h1 class="topHeader">Check In Your Weapon</h1>
+{% endblock %}
+
+{% block main_content %}
+<form method=POST action="/checkin/">
+    <table>
+        <tr>
+          <td><label for="wid">Weapon ID</label></td>
+          <td><input required id="wid" type="text" name="wid" placeholder="e.g. 1234"></td> 
+        </tr>
+        <tr>
+          <td><label for="email">Email</label></td>
+          <td><input required id="email" type="email" name="email" placeholder="e.g. wendyw@wellesley.edu"></td> 
+        </tr>
+        <tr>
+          <td><label for="checkindate">Current Date</label></td>
+          <td><input required id="checkindate" type="date" name="checkindate" placeholder="e.g. 2020-10-04"></td> 
+        </tr>
+    </table>
+    <input type="submit" name="submit" value="Check In">
+</form>
+
+{% endblock %}
