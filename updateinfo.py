@@ -4,10 +4,11 @@ Project Description: Weapons Database for Wellesley Wushu
 Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
 Course: CS304 Fall T1 2020
 '''
-# File Author: Elaney Cheng
 
 import cs304dbi as dbi
 
+# Currently, we only use the wid field to validate whether the weapon can be checked out
+# in app.py. We will use the other columns in the alpha version
 def getAllAvailableWeapons(conn):
     '''
     Return the wid, type, and condition of all weapons that are available to checkout of any type
@@ -18,6 +19,7 @@ def getAllAvailableWeapons(conn):
                 where wid not in (select wid from checkedout where checkindate is null)''')
     return curs.fetchall()
 
+# Will be used in alpha version
 def getAvailableWeaponsOfType(conn, type):
     '''
     Return the wid of all weapons that are available to checkout of specified type
@@ -48,19 +50,16 @@ def getCheckoutDate(conn, wid, email):
     curs = dbi.dict_cursor(conn)
     curs.execute('''select checkoutdate from checkedout where wid=%s and email=%s and checkindate is null''',
                 [wid, email])
-    return curs.fetchone()
+    return curs.fetchone()['checkoutdate']
 
 def checkin(conn, wid, email, checkoutdate, checkindate):
     '''
     Update the checkout request with the checkin date
     '''
     curs = dbi.cursor(conn)
-    try:
-        curs.execute('''update checkedout set checkindate=%s where wid=%s and email=%s and checkoutdate=%s''', 
-                    [checkindate, wid, email, checkoutdate])
-        conn.commit()
-    except:
-        print("Uh oh! Updating the checkout failed.")
+    curs.execute('''update checkedout set checkindate=%s where wid=%s and email=%s and checkoutdate=%s''', 
+                [checkindate, wid, email, checkoutdate])
+    conn.commit()
 
 def getMembers(conn):
     '''
@@ -75,9 +74,7 @@ def addMember(conn, email, name):
     Add a new member to the members table
     '''
     curs = dbi.dict_cursor(conn)
-    try:
-        curs.execute('''insert into members(email, name) values (%s, %s)''', 
+    curs.execute('''insert into members(email, name) values (%s, %s)''', 
                     [email, name])
-        conn.commit()
-    except:
-        print("Oops! This member could not be added. They may already be in the database.")
+    conn.commit()
+        

@@ -4,7 +4,6 @@ Project Description: Weapons Database for Wellesley Wushu
 Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
 Course: CS304 Fall T1 2020
 '''
-# File Author: Christine Lam
 
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify)
@@ -75,7 +74,24 @@ def checkout():
         wid = request.form["wid"]
         email = request.form["email"]
         checkoutdate = request.form["checkoutdate"]
-        updateinfo.checkout(conn, wid, email, checkoutdate)
+
+        # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
+        availableWeapons = set([w["wid"] for w in updateinfo.getAllAvailableWeapons(conn)])
+        if int(wid) not in availableWeapons:
+            flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
+            return render_template('checkoutform.html')
+
+        # Validate email: if the member does not exist, redirect to the add member page
+        members = set([m["email"] for m in updateinfo.getMembers(conn)])
+        if email not in members:
+            return redirect(url_for('addmember'))
+        try:
+            updateinfo.checkout(conn, wid, email, checkoutdate)
+        except:
+            # Flash an error and rerender checkout form if the checkout fails
+            flash("Uh oh! Updating the checkout failed.")
+            return render_template('checkoutform.html')
+        flash("Weapon {} successfully checked out out by {}".format(wid, email))
         return redirect(url_for('weapons'))
         
 
@@ -85,11 +101,17 @@ def checkin():
         return render_template('checkinform.html')
     else: # POST
         conn = dbi.connect()
+        # For now, assume all weapon ids and emails are valid
         wid = request.form["wid"]
         email = request.form["email"]
         checkindate = request.form["checkindate"]
         checkoutdate = updateinfo.getCheckoutDate(conn, wid, email)
-        updateinfo.checkin(conn, wid, email, checkoutdate, checkindate)
+        try:
+            updateinfo.checkin(conn, wid, email, checkoutdate.strftime("%Y-%m-%d"), checkindate)
+        except:
+            flash("Oh no! The checkin request failed")
+            return render_template('checkinform.html')
+        flash("Sucessessfully checked in weapon {}". format(wid))
         return redirect(url_for('weapons'))
 
 @app.route('/addmember/', methods=['GET','POST'])
@@ -100,7 +122,10 @@ def addmember():
         conn = dbi.connect()
         name = request.form["newName"]
         email = request.form["newEmail"]
-        updateinfo.addMember(conn, email, name)
+        try:
+            updateinfo.addMember(conn, email, name)
+        except:
+            flash("Oops! This member could not be added. They may already be in the database.")
         return redirect(url_for('checkout'))
 
 @app.before_first_request
