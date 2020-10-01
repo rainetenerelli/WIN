@@ -18,6 +18,15 @@
         {% endif %}
     {% endwith %}
 
+    {% block nav %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('weapons')}}">Browse Weapons</a></li>
+    <li><a href="{{url_for('checkout')}}">Check Out a Weapon</a></li>
+    <li><a href="{{url_for('checkin')}}">Check In a Weapon</a></li>
+  </ul>
+</nav>
+{% endblock %}
 
     {% block top %}
     {% endblock %}
