@@ -75,7 +75,7 @@ def checkout():
         wid = request.form["wid"]
         email = request.form["email"]
         checkoutdate = request.form["checkoutdate"]
-        updateinfo.checkOut(conn, wid, email, checkoutdate)
+        updateinfo.checkout(conn, wid, email, checkoutdate)
         return redirect(url_for('weapons'))
         
 
@@ -89,7 +89,7 @@ def checkin():
         email = request.form["email"]
         checkindate = request.form["checkindate"]
         checkoutdate = updateinfo.getCheckoutDate(conn, wid, email)
-        updateinfo.checkIn(conn, wid, email, checkoutdate, checkindate)
+        updateinfo.checkin(conn, wid, email, checkoutdate, checkindate)
         return redirect(url_for('weapons'))
 
 @app.route('/addmember/', methods=['GET','POST'])

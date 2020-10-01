@@ -19,7 +19,7 @@ def getAvailableWeapons(conn, type):
                 [type])
     return curs.fetchall()
 
-def checkOut(conn, wid, email, checkoutdate):
+def checkout(conn, wid, email, checkoutdate):
     '''
     Update the checkout table with the new checkout info
     '''
@@ -40,7 +40,7 @@ def getCheckoutDate(conn, wid, email):
                 [wid, email])
     return curs.fetchone()
 
-def checkIn(conn, wid, email, checkoutdate, checkindate):
+def checkin(conn, wid, email, checkoutdate, checkindate):
     '''
     Update the checkout request with the checkin date
     '''
@@ -51,6 +51,14 @@ def checkIn(conn, wid, email, checkoutdate, checkindate):
         conn.commit()
     except:
         print("Uh oh! Updating the checkout failed.")
+
+def getMembers(conn):
+    '''
+    Returns the email addresses of all members in the table
+    '''
+    curs = dbi.cursor(conn)
+    curs.execute('''select email from members''')
+    return curs.fetchall()
 
 def addMember(conn, email, name):
     '''
