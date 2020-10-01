@@ -8,11 +8,21 @@ Course: CS304 Fall T1 2020
 
 import cs304dbi as dbi
 
-def getAvailableWeapons(conn, type):
+def getAllAvailableWeapons(conn):
+    '''
+    Return the wid, type, and condition of all weapons that are available to checkout of any type
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+                select wid,type,`condition` from weapons 
+                where wid not in (select wid from checkedout where checkindate is null)''')
+    return curs.fetchall()
+
+def getAvailableWeaponsOfType(conn, type):
     '''
     Return the wid of all weapons that are available to checkout of specified type
     '''
-    curs = dbi.cursor(conn)
+    curs = dbi.dict_cursor(conn)
     curs.execute('''
                 select wid from weapons 
                 where type=%s and wid not in (select wid from checkedout where checkindate is null)''',
@@ -56,7 +66,7 @@ def getMembers(conn):
     '''
     Returns the email addresses of all members in the table
     '''
-    curs = dbi.cursor(conn)
+    curs = dbi.dict_cursor(conn)
     curs.execute('''select email from members''')
     return curs.fetchall()
 
