@@ -75,7 +75,7 @@ def checkout():
         wid = request.form["wid"]
         email = request.form["email"]
         checkoutdate = request.form["checkoutdate"]
-        checkOut(conn, wid, email, checkoutdate)
+        updateinfo.checkOut(conn, wid, email, checkoutdate)
         return redirect(url_for('weapons'))
         
 
