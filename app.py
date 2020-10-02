@@ -31,23 +31,16 @@ def index():
         return render_template('main.html')
     elif request.method == 'POST':
         username = request.form['username']
-        # Check if username is correct and redirect accordingly to either general or eboard
-        # For the draft version, these pages are identical
-        if (username == 'eboard'):
-            return redirect(url_for('eboard'))
-        elif (username == 'genmem'):
-            return redirect(url_for('genmem'))
+        # Check if username is correct and redirect to wushu member page
+        if (username == 'wushu'):
+            return redirect(url_for('wushu'))
         else: # incorrect username
             flash("Wrong username. Please try again.")
             return render_template('main.html')
 
-@app.route('/genmem/')
-def genmem():
-    return render_template('generalmember.html')
-
-@app.route('/eboard/')
-def eboard():
-    return render_template('eboardmember.html')
+@app.route('/wushu/')
+def wushu():
+    return render_template('wushumember.html')
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
