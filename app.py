@@ -15,8 +15,7 @@ import random
 
 app = Flask(__name__)
 
-app.secret_key = 'your secret here'
-# replace that with a random key
+app.secret_key = 'uwu'
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
                                           'abcdefghijklmnopqrstuvxyz' +
                                           '0123456789'))
@@ -84,7 +83,7 @@ def checkout():
             return render_template('checkoutform.html')
 
         flash("Weapon {} successfully checked out out by {}".format(wid, email))
-        return redirect(url_for('weapons'))
+        return redirect(url_for('wushu'))
         
 
 @app.route('/checkin/', methods=['GET','POST'])
@@ -106,7 +105,7 @@ def checkin():
             return render_template('checkinform.html')
 
         flash("Sucessessfully checked in weapon {}". format(wid))
-        return redirect(url_for('weapons'))
+        return redirect(url_for('wushu'))
 
 @app.route('/addmember/', methods=['GET','POST'])
 def addmember():
