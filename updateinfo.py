@@ -7,8 +7,17 @@ Course: CS304 Fall T1 2020
 
 import cs304dbi as dbi
 
-# Currently, we only use the wid field to validate whether the weapon can be checked out
-# in app.py. We will use the other columns in the alpha version
+# Used to validate if this weapon can be checked out
+def isWeaponAvailabe(conn, wid):
+    '''
+    Return True if the weapon with wid is not checked out, False otherwise
+    '''
+    curs = dbi.cursor(conn)
+    # Check if the weapon is currently checked out
+    res = curs.execute('''select wid from checkedout where checkindate is null and wid=%s''', [wid])
+    return res == 0
+
+#  We will use this in the alpha version
 def getAllAvailableWeapons(conn):
     '''
     Return the wid, type, and condition of all weapons that are available to checkout of any type
@@ -19,7 +28,7 @@ def getAllAvailableWeapons(conn):
                 where wid not in (select wid from checkedout where checkindate is null)''')
     return curs.fetchall()
 
-# Will be used in alpha version
+#  We will use this in the alpha version
 def getAvailableWeaponsOfType(conn, type):
     '''
     Return the wid of all weapons that are available to checkout of specified type
@@ -61,20 +70,19 @@ def checkin(conn, wid, email, checkoutdate, checkindate):
                 [checkindate, wid, email, checkoutdate])
     conn.commit()
 
-def getMembers(conn):
+def isMember(conn, email):
     '''
-    Returns the email addresses of all members in the table
+    Returns True if there is a member with the specified email, False otherwise
     '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''select email from members''')
-    return curs.fetchall()
+    curs = dbi.cursor(conn)
+    res = curs.execute('''select email from members where email=%s''', [email])
+    return res > 0
 
 def addMember(conn, email, name):
     '''
     Add a new member to the members table
     '''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into members(email, name) values (%s, %s)''', 
-                    [email, name])
+    curs.execute('''insert into members(email, name) values (%s, %s)''', [email, name])
     conn.commit()
         

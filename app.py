@@ -11,7 +11,6 @@ from flask import (Flask, render_template, make_response, url_for, request,
 import cs304dbi as dbi
 import filterweapons
 import updateinfo
-import updateinfo
 import random
 
 app = Flask(__name__)
@@ -32,8 +31,8 @@ def index():
         return render_template('main.html')
     elif request.method == 'POST':
         username = request.form['username']
-        # check if username is correct
-        # redirect to either general or eboard
+        # Check if username is correct and redirect accordingly to either general or eboard
+        # For the draft version, these pages are identical
         if (username == 'eboard'):
             return redirect(url_for('eboard'))
         elif (username == 'genmem'):
@@ -76,14 +75,13 @@ def checkout():
         checkoutdate = request.form["checkoutdate"]
 
         # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
-        availableWeapons = set([w["wid"] for w in updateinfo.getAllAvailableWeapons(conn)])
-        if int(wid) not in availableWeapons:
+        if not updateinfo.isWeaponAvailabe(conn, wid):
             flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
             return render_template('checkoutform.html')
 
         # Validate email: if the member does not exist, redirect to the add member page
-        members = set([m["email"] for m in updateinfo.getMembers(conn)])
-        if email not in members:
+        if not updateinfo.isMember(conn, email):
+            flash("{} is not in the member database".format(email))
             return redirect(url_for('addmember'))
         try:
             updateinfo.checkout(conn, wid, email, checkoutdate)
@@ -91,6 +89,7 @@ def checkout():
             # Flash an error and rerender checkout form if the checkout fails
             flash("Uh oh! Updating the checkout failed.")
             return render_template('checkoutform.html')
+
         flash("Weapon {} successfully checked out out by {}".format(wid, email))
         return redirect(url_for('weapons'))
         
@@ -106,11 +105,13 @@ def checkin():
         email = request.form["email"]
         checkindate = request.form["checkindate"]
         checkoutdate = updateinfo.getCheckoutDate(conn, wid, email)
+
         try:
             updateinfo.checkin(conn, wid, email, checkoutdate.strftime("%Y-%m-%d"), checkindate)
         except:
             flash("Oh no! The checkin request failed")
             return render_template('checkinform.html')
+
         flash("Sucessessfully checked in weapon {}". format(wid))
         return redirect(url_for('weapons'))
 
