@@ -60,10 +60,11 @@ def weapons():
     else:
         conn = dbi.connect()
         filterType = request.form.get("weapon-type")
-        filterTypeSplit = filterType.split(" ")
         filteredWeaponsList = []
-        for fType in filterTypeSplit:
-            filteredWeaponsList += filterweapons.filterByType(conn,fType)
+        if filterType == "select" or filterType == "all":
+            filteredWeaponsList = filterweapons.getAllWeapons(conn)
+        else:
+            filteredWeaponsList = filterweapons.filterByType(conn, filterType)
         return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
     
 @app.route('/checkout/', methods=['GET','POST'])
@@ -76,6 +77,7 @@ def checkout():
         email = request.form["email"]
         checkoutdate = request.form["checkoutdate"]
 
+        # Replace with 
         # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
         if not updateinfo.isWeaponAvailabe(conn, wid):
             flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
