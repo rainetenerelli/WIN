@@ -4,7 +4,6 @@ WIN will be a weapons inventory tracker and lender application that gathers the 
 ### Primary Features
 - [ ] Updating data
 - [ ] Checking weapons in and out 
-- [ ] Adding/deleting weapons 
 - [ ] User authentication
 - [ ] Uploading pictures to record weapon condition
 - [ ] Filter weapons list by type of weapon, condition, checked in, checked out
