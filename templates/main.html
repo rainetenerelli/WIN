@@ -1,24 +1,10 @@
 {% extends "base.html" %}
 
-    {% block nav %}
-
-    {% endblock %}
-
     {% block head_stuff %} 
-    <title>WIN Login</title>
-    <meta name="description" content="Login page for WIN">
-    {% endblock %}
-
-    {% block top %}
-    <h1 class="topHeader">Login Page</h1>
+    <title>WIN home page</title>
+    <meta name="description" content="home page for WIN">
     {% endblock %}
 
     {% block main %}
-    <form method="POST" style="text-align: center;" action="">
-        <div id="login">
-            <label for="username"><strong>Username: </strong></label>
-            <input required id="username" type="text" name="username" placeholder="">
-        </div>
-        <input type="submit" value="Submit">
-    </form>
+    <h1> Welcome {{username}}! </h1>
     {% endblock %}

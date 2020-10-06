@@ -24,22 +24,41 @@ app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
 # This gets us better error messages for certain common request errors
 app.config['TRAP_BAD_REQUEST_ERRORS'] = True
 
-@app.route('/', methods=['GET','POST'])
-def index():
-    if request.method == 'GET':
-        return render_template('main.html')
-    elif request.method == 'POST':
-        username = request.form['username']
-        # Check if username is correct and redirect to wushu member page
-        if (username == 'wushu'):
-            return redirect(url_for('wushu'))
-        else: # incorrect username
-            flash("Wrong username. Please try again.")
-            return render_template('main.html')
+# CAS setup
+from flask_cas import CAS
 
-@app.route('/wushu/')
-def wushu():
-    return render_template('wushumember.html')
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+
+@app.route('/')
+def login():
+    return render_template('login.html')
+
+@app.route('/logged_in/')
+def logged_in():
+    flash('Successfully logged in!')
+    return redirect(url_for('index'))
+
+@app.route('/home/')
+def index():
+    if '_CAS_TOKEN' in session:
+        token = session['_CAS_TOKEN']
+    if 'CAS_ATTRIBUTES' in session:
+        attribs = session['CAS_ATTRIBUTES']
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        conn = dbi.connect()
+        if updateinfo.isMember(conn, username):
+            return render_template('main.html', username=username)
+        else:
+            flash("Sorry, {} is not in the list of members. Please talk to an eboard member to be added.".format(username))
+    # if we reach here, no one is logged in or the member is not valid
+    return redirect(url_for('login'))
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
@@ -128,11 +147,23 @@ def init_db():
 
 if __name__ == '__main__':
     import sys, os
+
     if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-        assert(port>1024)
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1952):
+            print('For CAS, choose a port from 1943 to 1952')
+            sys.exit()
     else:
-        port = os.getuid()
+        port=os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
+# if __name__ == '__main__':
+#     import sys, os
+#     if len(sys.argv) > 1:
+#         port = int(sys.argv[1])
+#         assert(port>1024)
+#     else:
+#         port = os.getuid()
+#     app.debug = True
+#     app.run('0.0.0.0',port)
 

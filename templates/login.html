@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+    {% block top %}
+    <h1 class="topHeader">Login Page</h1>
+    {% endblock %}
+
+    {% block logout %}
+    {% endblock %}
+
+    {% block nav %}
+    {% endblock %}
+
+    {% block main %}
+    <form method="GET" action="{{url_for('cas.login')}}">
+        <button>login</button>
+    </form>
+    {% endblock %}
