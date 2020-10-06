@@ -35,21 +35,12 @@ app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
 app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
 app.config['CAS_AFTER_LOGIN'] = 'logged_in'
 
-@app.route('/')
-def login():
-    return render_template('login.html')
-
 @app.route('/logged_in/')
 def logged_in():
-    flash('Successfully logged in!')
     return redirect(url_for('index'))
 
-@app.route('/home/')
+@app.route('/')
 def index():
-    if '_CAS_TOKEN' in session:
-        token = session['_CAS_TOKEN']
-    if 'CAS_ATTRIBUTES' in session:
-        attribs = session['CAS_ATTRIBUTES']
     if 'CAS_USERNAME' in session:
         username = session['CAS_USERNAME']
         conn = dbi.connect()
@@ -57,8 +48,8 @@ def index():
             return render_template('main.html', username=username)
         else:
             flash("Sorry, {} is not in the list of members. Please talk to an eboard member to be added.".format(username))
-    # if we reach here, no one is logged in or the member is not valid
-    return redirect(url_for('login'))
+    # if we reach here, no one is logged in or the member is not valid so redirect to login page
+    return render_template('login.html')
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
