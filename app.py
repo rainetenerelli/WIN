@@ -142,7 +142,6 @@ def addmember():
 @app.route('/images/')
 def images():
    image_arr = os.listdir(app.config['UPLOAD_PATH'])
-   print (image_arr)
    return render_template('images.html', image_arr = image_arr)
 	
 @app.route('/images/', methods = ['POST'])
@@ -166,6 +165,10 @@ def upload_file():
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         flash("Image sucessfully uploaded. Yeehaw.")
     return redirect(url_for('images'))
+
+@app.route('/images/<filename>')
+def upload(filename):
+    return send_from_directory(app.config['UPLOAD_PATH'], filename)
 
 @app.before_first_request
 def init_db():
