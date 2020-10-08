@@ -187,13 +187,3 @@ if __name__ == '__main__':
         port=os.getuid()
     app.debug = True
     app.run('0.0.0.0',port)
-# if __name__ == '__main__':
-#     import sys, os
-#     if len(sys.argv) > 1:
-#         port = int(sys.argv[1])
-#         assert(port>1024)
-#     else:
-#         port = os.getuid()
-#     app.debug = True
-#     app.run('0.0.0.0',port)
-
