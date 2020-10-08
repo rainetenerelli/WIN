@@ -14,18 +14,26 @@ def isWeaponAvailabe(conn, wid):
     '''
     curs = dbi.cursor(conn)
     # Check if the weapon is currently checked out
-    res = curs.execute('''select wid from checkedout where checkindate is null and wid=%s''', [wid])
+    res = curs.execute('''
+                        select wid 
+                        from checkedout 
+                        where checkindate is null and wid=%s''',
+                     [wid])
     return res == 0
 
-#  Can use for dropdown, or write alternative
+#  Can use for dropdown
 def getAllAvailableWeapons(conn):
     '''
     Return the wid, type, and condition of all weapons that are available to checkout of any type
     '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-                select wid,type,`condition` from weapons 
-                where wid not in (select wid from checkedout where checkindate is null)''')
+                select wid,type,`condition`
+                from weapons 
+                where wid not in
+                 (select wid
+                  from checkedout
+                  where checkindate is null)''')
     return curs.fetchall()
 
 #  Can use for dropdown, for checking in
@@ -35,20 +43,13 @@ def getAllTakenWeapons(conn, username):
     '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
-                select wid,type,`condition` from weapons 
-                where wid in (select wid from checkedout where checkindate is null and username = %s)''', [username])
-    return curs.fetchall()
-
-#  Possibly may not need
-def getAvailableWeaponsOfType(conn, type):
-    '''
-    Return the wid of all weapons that are available to checkout of specified type
-    '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''
-                select wid from weapons 
-                where type=%s and wid not in (select wid from checkedout where checkindate is null)''',
-                [type])
+                select wid,type,`condition`
+                from weapons 
+                where wid in
+                 (select wid
+                  from checkedout 
+                  where checkindate is null and username = %s)''',
+                [username])
     return curs.fetchall()
 
 def checkout(conn, wid, username, checkoutdate):
@@ -58,7 +59,9 @@ def checkout(conn, wid, username, checkoutdate):
     curs = dbi.cursor(conn)
     try:
         print(str(wid) + ' ' + username + ' ' + checkoutdate)
-        curs.execute('''insert into checkedout(wid, username, checkoutdate) values (%s, %s, %s)''', 
+        curs.execute('''
+                    insert into checkedout(wid, username, checkoutdate)
+                    values (%s, %s, %s)''', 
                     [wid, username, checkoutdate])
         conn.commit()
     except:
@@ -69,7 +72,10 @@ def getCheckoutDate(conn, wid, username):
     Get the checkout date of an (unreturned) request for a member
     '''
     curs = dbi.dict_cursor(conn)
-    curs.execute('''select checkoutdate from checkedout where wid=%s and username=%s and checkindate is null''',
+    curs.execute('''
+                select checkoutdate
+                from checkedout 
+                where wid=%s and username=%s and checkindate is null''',
                 [wid, username])
     return curs.fetchone()['checkoutdate']
 
@@ -78,7 +84,10 @@ def checkin(conn, wid, username, checkoutdate, checkindate):
     Update the checkout request with the checkin date
     '''
     curs = dbi.cursor(conn)
-    curs.execute('''update checkedout set checkindate=%s where wid=%s and username=%s and checkoutdate=%s''', 
+    curs.execute('''
+                update checkedout
+                set checkindate=%s
+                where wid=%s and username=%s and checkoutdate=%s''', 
                 [checkindate, wid, username, checkoutdate])
     conn.commit()
 
@@ -90,11 +99,4 @@ def isMember(conn, username):
     res = curs.execute('''select username from members where username=%s''', [username])
     return res > 0
 
-def addMember(conn, username, name):
-    '''
-    Add a new member to the members table
-    '''
-    curs = dbi.dict_cursor(conn)
-    curs.execute('''insert into members(username, name) values (%s, %s)''', [username, name])
-    conn.commit()
         

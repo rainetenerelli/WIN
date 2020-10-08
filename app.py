@@ -82,25 +82,23 @@ def checkout():
     else: # POST
         if 'CAS_USERNAME' in session: # check to see if you are logged in
             username = session['CAS_USERNAME']
+            conn = dbi.connect()
+
             available = updateinfo.getAllAvailableWeapons(conn)
             # check to see if they selected a valid weapon
             if request.form["wid"] == "select":
                 flash("You did not select a weapon. Please make sure to fill out all fields before submitting.")
                 return render_template('checkoutform.html', weapons = available)
-            conn = dbi.connect()
+            
             wid = request.form["wid"]
             checkoutdate = request.form["checkoutdate"]
 
-            # Replace with 
             # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
+            # just in case multiple users are checking weapons out at simultaneously
             if not updateinfo.isWeaponAvailabe(conn, wid):
                 flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
                 return render_template('checkoutform.html', weapons = available)
 
-            # Validate email: if the member does not exist, redirect to the add member page
-            if not updateinfo.isMember(conn, username):
-                flash("{} is not in the member database".format(username))
-                return redirect(url_for('addmember'))
             try:
                 updateinfo.checkout(conn, wid, username, checkoutdate)
             except:
@@ -125,7 +123,6 @@ def checkin():
             return render_template('checkinform.html', weapons = taken)
         else: # POST
             conn = dbi.connect()
-            # For now, assume all weapon ids and emails are valid
             wid = request.form["wid"]
             checkindate = request.form["checkindate"]
             checkoutdate = updateinfo.getCheckoutDate(conn, wid, username)
