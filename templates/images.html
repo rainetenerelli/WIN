@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head_stuff %} 
+    <title>Zoom Backgrounds for T1 Fall 2020 CS304</title>
+    <meta name="description" content="Upload and display zoom backgrounds.">
+{% endblock %}
+
+{% block top %}
+
+{% endblock %}
+
+{% block main %}
+
+<html>
+   <body>
+      <form action = "" method = "POST" 
+         enctype = "multipart/form-data">
+         <input type="file" name="image_file" accept="image/*">
+         <input type = "submit"/>
+      </form>
+   </body>
+</html>
+
+{% for image in image_arr %}
+    <img src="static/images/{{image}}" alt="Scott's face photoshopped onto a funny image - image {{image}}" width="1920" height="1080" >
+{% endfor %}
+
+{% endblock %}

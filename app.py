@@ -6,14 +6,20 @@ Course: CS304 Fall T1 2020
 '''
 
 from flask import (Flask, render_template, make_response, url_for, request,
-                   redirect, flash, session, send_from_directory, jsonify)
-
+                   redirect, flash, session, send_from_directory, jsonify,
+                   send_from_directory)
+from werkzeug.utils import secure_filename
+from os import listdir
 import cs304dbi as dbi
 import filterweapons
 import updateinfo
 import random
 
+
 app = Flask(__name__)
+app.config['UPLOAD_PATH'] = 'static/images'
+app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.jpeg']
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
 app.secret_key = 'uwu'
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -132,6 +138,25 @@ def addmember():
         except:
             flash("Oops! This member could not be added. They may already be in the database.")
         return redirect(url_for('checkout'))
+
+@app.route('/images/')
+def images():
+   image_arr = os.listdir(app.config['UPLOAD_PATH'])
+   print (image_arr)
+   return render_template('images.html', image_arr = image_arr)
+	
+@app.route('/images/', methods = ['POST'])
+def upload_file():
+    uploaded_file = request.files['image_file']
+    filename = secure_filename(uploaded_file.filename)
+    if filename != '':
+        file_ext = os.path.splitext(filename)[1]
+        if file_ext not in app.config['UPLOAD_EXTENSIONS']:
+            flash("Not a valid upload. Must be .jpg .png or .jpeg")
+            abort(400)
+        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+        flash("Image sucessfully uploaded. Yeehaw.")
+    return redirect(url_for('images'))
 
 @app.before_first_request
 def init_db():
