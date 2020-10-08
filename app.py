@@ -7,7 +7,7 @@ Course: CS304 Fall T1 2020
 
 from flask import (Flask, render_template, make_response, url_for, request,
                    redirect, flash, session, send_from_directory, jsonify,
-                   send_from_directory)
+                   abort)
 from werkzeug.utils import secure_filename
 from os import listdir
 import cs304dbi as dbi
@@ -19,7 +19,7 @@ import random
 app = Flask(__name__)
 app.config['UPLOAD_PATH'] = 'static/images'
 app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.jpeg']
-app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 2048 * 2048
 
 app.secret_key = 'uwu'
 app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
@@ -149,11 +149,20 @@ def images():
 def upload_file():
     uploaded_file = request.files['image_file']
     filename = secure_filename(uploaded_file.filename)
+    image_arr = os.listdir(app.config['UPLOAD_PATH'])
+    # check that image exists
     if filename != '':
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in app.config['UPLOAD_EXTENSIONS']:
+            # checking if valid extension
             flash("Not a valid upload. Must be .jpg .png or .jpeg")
-            abort(400)
+            return render_template('images.html', image_arr = image_arr)
+        # checking if image already exists
+        if filename in image_arr:
+            flash("This image name is already in use. You might be trying to " + 
+            "upload an existing image.")
+            return render_template('images.html', image_arr = image_arr)
+        # save image
         uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
         flash("Image sucessfully uploaded. Yeehaw.")
     return redirect(url_for('images'))
