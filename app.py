@@ -76,54 +76,67 @@ def weapons():
 @app.route('/checkout/', methods=['GET','POST'])
 def checkout():
     if request.method == 'GET':
-        return render_template('checkoutform.html')
-    else: # POST
         conn = dbi.connect()
-        wid = request.form["wid"]
-        email = request.form["email"]
-        checkoutdate = request.form["checkoutdate"]
+        available = updateinfo.getAllAvailableWeapons(conn)
+        return render_template('checkoutform.html', weapons = available)
+    else: # POST
+        if 'CAS_USERNAME' in session: # check to see if you are logged in
+            username = session['CAS_USERNAME']
+            conn = dbi.connect()
+            wid = request.form["wid"]
+            checkoutdate = request.form["checkoutdate"]
 
-        # Replace with 
-        # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
-        if not updateinfo.isWeaponAvailabe(conn, wid):
-            flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
-            return render_template('checkoutform.html')
+            # Replace with 
+            # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
+            if not updateinfo.isWeaponAvailabe(conn, wid):
+                flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
+                return render_template('checkoutform.html')
 
-        # Validate email: if the member does not exist, redirect to the add member page
-        if not updateinfo.isMember(conn, email):
-            flash("{} is not in the member database".format(email))
-            return redirect(url_for('addmember'))
-        try:
-            updateinfo.checkout(conn, wid, email, checkoutdate)
-        except:
-            # Flash an error and rerender checkout form if the checkout fails
-            flash("Uh oh! Updating the checkout failed.")
-            return render_template('checkoutform.html')
+            # Validate email: if the member does not exist, redirect to the add member page
+            if not updateinfo.isMember(conn, username):
+                flash("{} is not in the member database".format(username))
+                return redirect(url_for('addmember'))
+            try:
+                updateinfo.checkout(conn, wid, username, checkoutdate)
+            except:
+                # Flash an error and rerender checkout form if the checkout fails
+                flash("Uh oh! Updating the checkout failed.")
+                return render_template('checkoutform.html')
 
-        flash("Weapon {} successfully checked out out by {}".format(wid, email))
-        return redirect(url_for('wushu'))
+            flash("Weapon {} successfully checked out out by {}".format(wid, username))
+            return redirect(url_for('index'))
+        else: # if not logged in
+            flash("Sorry, you are not logged in. Please log in before checking out a weapon.")
+            return redirect(url_for('index'))
         
 
 @app.route('/checkin/', methods=['GET','POST'])
 def checkin():
     if request.method == 'GET':
-        return render_template('checkinform.html')
-    else: # POST
         conn = dbi.connect()
-        # For now, assume all weapon ids and emails are valid
-        wid = request.form["wid"]
-        email = request.form["email"]
-        checkindate = request.form["checkindate"]
-        checkoutdate = updateinfo.getCheckoutDate(conn, wid, email)
+        taken = updateinfo.getAllTakenWeapons(conn)
+        print(taken)
+        return render_template('checkinform.html', weapons = taken)
+    else: # POST
+        if 'CAS_USERNAME' in session: # check to see if you are logged in
+            username = session['CAS_USERNAME']
+            conn = dbi.connect()
+            # For now, assume all weapon ids and emails are valid
+            wid = request.form["wid"]
+            checkindate = request.form["checkindate"]
+            checkoutdate = updateinfo.getCheckoutDate(conn, wid, username)
+            try:
+                updateinfo.checkin(conn, wid, username, checkoutdate.strftime("%Y-%m-%d"), checkindate)
+            except:
+                flash("Oh no! The checkin request failed")
+                taken = updateinfo.getAllTakenWeapons(conn)
+                return render_template('checkinform.html', weapons = taken)
 
-        try:
-            updateinfo.checkin(conn, wid, email, checkoutdate.strftime("%Y-%m-%d"), checkindate)
-        except:
-            flash("Oh no! The checkin request failed")
-            return render_template('checkinform.html')
-
-        flash("Sucessessfully checked in weapon {}". format(wid))
-        return redirect(url_for('wushu'))
+            flash("Sucessessfully checked in weapon {}". format(wid))
+            return redirect(url_for('index'))
+        else: # if not logged in
+            flash("Sorry, you are not logged in. Please log in before checking in a weapon.")
+            return redirect(url_for('index'))
 
 @app.route('/addmember/', methods=['GET','POST'])
 def addmember():

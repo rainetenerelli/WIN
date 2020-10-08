@@ -6,21 +6,27 @@
 
 {% block main %}
 <form method=POST action="/checkout/">
-    <table>
-        <tr>
-          <td><label for="wid">Weapon ID</label></td>
-          <td><input required id="wid" type="text" name="wid" placeholder="e.g. 1234"></td> 
-        </tr>
-        <tr>
-          <td><label for="email">Email</label></td>
-          <td><input required id="email" type="email" name="email" placeholder="e.g. wendyw@wellesley.edu"></td> 
-        </tr>
-        <tr>
-          <td><label for="checkoutdate">Current Date</label></td>
-          <td><input required id="checkoutdate" type="date" name="checkoutdate" placeholder="e.g. 2020-10-04"></td> 
-        </tr>
-    </table>
-    <input type="submit" name="submit" value="Check Out">
+    <!--WEAPON DROP DOWN-->
+    <div>
+        <label for="wid">Weapon ID</label>
+        <select required id="wid" name="wid">
+            <option>--select--</option>
+            {% for weapon in weapons: %}
+                <option value="{{ weapon.wid }}">{{ weapon.type }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!--CHECK OUT DATE-->
+    <div>
+        <label for="checkoutdate">Current Date</label></td>
+        <input required id="checkoutdate" type="date" name="checkoutdate" placeholder="e.g. 2020-10-04"></td> 
+    </div>
+
+    <!--SUBMIT DATE-->
+    <div>
+        <input type="submit" name="submit" value="Check Out">
+    </div>
 </form>
 
 {% endblock %}
