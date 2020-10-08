@@ -10,9 +10,9 @@
     <div>
         <label for="wid">Weapon ID</label>
         <select required id="wid" name="wid">
-            <option>--select--</option>
+            <option value="select">--select--</option>
             {% for weapon in weapons: %}
-                <option value="{{ weapon.wid }}">{{ weapon.type }}</option>
+                <option value="{{ weapon.wid }}">{{ weapon.wid }} {{ weapon.type }} {{ weapon.condition }}</option>
             {% endfor %}
         </select>
     </div>

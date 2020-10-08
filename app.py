@@ -82,6 +82,11 @@ def checkout():
     else: # POST
         if 'CAS_USERNAME' in session: # check to see if you are logged in
             username = session['CAS_USERNAME']
+            available = updateinfo.getAllAvailableWeapons(conn)
+            # check to see if they selected a valid weapon
+            if request.form["wid"] == "select":
+                flash("You did not select a weapon. Please make sure to fill out all fields before submitting.")
+                return render_template('checkoutform.html', weapons = available)
             conn = dbi.connect()
             wid = request.form["wid"]
             checkoutdate = request.form["checkoutdate"]
@@ -90,7 +95,7 @@ def checkout():
             # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
             if not updateinfo.isWeaponAvailabe(conn, wid):
                 flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
-                return render_template('checkoutform.html')
+                return render_template('checkoutform.html', weapons = available)
 
             # Validate email: if the member does not exist, redirect to the add member page
             if not updateinfo.isMember(conn, username):
@@ -101,7 +106,7 @@ def checkout():
             except:
                 # Flash an error and rerender checkout form if the checkout fails
                 flash("Uh oh! Updating the checkout failed.")
-                return render_template('checkoutform.html')
+                return render_template('checkoutform.html', weapons = available)
 
             flash("Weapon {} successfully checked out out by {}".format(wid, username))
             return redirect(url_for('index'))
@@ -112,14 +117,13 @@ def checkout():
 
 @app.route('/checkin/', methods=['GET','POST'])
 def checkin():
-    if request.method == 'GET':
-        conn = dbi.connect()
-        taken = updateinfo.getAllTakenWeapons(conn)
-        print(taken)
-        return render_template('checkinform.html', weapons = taken)
-    else: # POST
-        if 'CAS_USERNAME' in session: # check to see if you are logged in
-            username = session['CAS_USERNAME']
+    if 'CAS_USERNAME' in session: # check to see if you are logged in
+        username = session['CAS_USERNAME']
+        if request.method == 'GET':
+            conn = dbi.connect()
+            taken = updateinfo.getAllTakenWeapons(conn, username)
+            return render_template('checkinform.html', weapons = taken)
+        else: # POST
             conn = dbi.connect()
             # For now, assume all weapon ids and emails are valid
             wid = request.form["wid"]
@@ -129,14 +133,14 @@ def checkin():
                 updateinfo.checkin(conn, wid, username, checkoutdate.strftime("%Y-%m-%d"), checkindate)
             except:
                 flash("Oh no! The checkin request failed")
-                taken = updateinfo.getAllTakenWeapons(conn)
+                taken = updateinfo.getAllTakenWeapons(conn, username)
                 return render_template('checkinform.html', weapons = taken)
 
             flash("Sucessessfully checked in weapon {}". format(wid))
             return redirect(url_for('index'))
-        else: # if not logged in
-            flash("Sorry, you are not logged in. Please log in before checking in a weapon.")
-            return redirect(url_for('index'))
+    else: # if not logged in
+        flash("Sorry, you are not logged in. Please log in before checking in a weapon.")
+        return redirect(url_for('index'))
 
 @app.route('/addmember/', methods=['GET','POST'])
 def addmember():

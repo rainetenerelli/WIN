@@ -29,14 +29,14 @@ def getAllAvailableWeapons(conn):
     return curs.fetchall()
 
 #  Can use for dropdown, for checking in
-def getAllTakenWeapons(conn):
+def getAllTakenWeapons(conn, username):
     '''
     Return the wid, type, and condition of all weapons that are available to checkin of any type
     '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
                 select wid,type,`condition` from weapons 
-                where wid in (select wid from checkedout where checkindate is null)''')
+                where wid in (select wid from checkedout where checkindate is null and username = %s)''', [username])
     return curs.fetchall()
 
 #  Possibly may not need
@@ -57,7 +57,8 @@ def checkout(conn, wid, username, checkoutdate):
     '''
     curs = dbi.cursor(conn)
     try:
-        curs.execute('''insert into checkedout(wid, username, checkoutdate, checkindate) values (%s, %s, %s)''', 
+        print(str(wid) + ' ' + username + ' ' + checkoutdate)
+        curs.execute('''insert into checkedout(wid, username, checkoutdate) values (%s, %s, %s)''', 
                     [wid, username, checkoutdate])
         conn.commit()
     except:
