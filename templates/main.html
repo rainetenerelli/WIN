@@ -6,5 +6,16 @@
     {% endblock %}
 
     {% block main %}
-    <h1> Welcome {{username}}! </h1>
+    <h1> Welcome, {{username}}! </h1>
+
+    <p>Welcome to WIN, the Wushu Inventory Ninja! You can use me to manage your 
+        weapons and look at all of the cool weapons wushu has to offer. 
+        <b>What would you like to do today?</b> </p>
+
+    <div class = "buttons">
+        <a href="{{url_for('weapons')}}" class="btn">Browse Weapons</a>
+        <a href="{{url_for('checkout')}}" class="btn">Check Out Weapon</a>
+        <a href="{{url_for('checkin')}}" class="btn">Check In Weapon</a>
+    </div>
+
     {% endblock %}

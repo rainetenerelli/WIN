@@ -1,3 +1,35 @@
+HTML {
+    --color-background: #302C2B; 
+    --color-accent: #BB3B3B;
+    --color-text: #FFF2EF;
+    --font-family: Helvetica;
+
+    font-family: var(--font-family);
+    background-color: var(--color-background);
+    text-align: center;
+    color: var(--color-text);
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+.buttons{
+    margin: 2rem;
+}
+
+.btn:visited, .btn:link {
+    display: block;
+    font-size: 20px;
+    margin-top:30px;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    padding: 20px 22px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 30%;
+    margin-right: 30%;
+  }
+
 .topHeader {
     text-align: center;
 }
