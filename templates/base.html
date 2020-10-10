@@ -10,6 +10,9 @@
 </head>
 
 <body>
+    {% block nav %}
+    {% endblock %}
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <div id="messages">
@@ -20,17 +23,8 @@
         {% endif %}
     {% endwith %}
 
-    {% block logout %}
-        <form method="GET" action="{{url_for('cas.logout')}}">
-            <button>logout</button>
-        </form>
-    {% endblock %}
-
     {% block logo %}
     
-    {% endblock %}
-
-    {% block nav %}
     {% endblock %}
 
     {% block top %}
@@ -39,6 +33,19 @@
     {% block main %}
     {% endblock %}
 
+
+
     {% block foot %}
+    {% block logout %}
+    <div class = "footer">
+    <form class = "method="GET" action="{{url_for('cas.logout')}}">
+        <button>logout</button>
+    </form>
+    {% endblock %}
+    <p>
+        &copy 2020 - Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang <br>
+        Special thanks to Scott Anderson for being an amazing professor!
+    </p>
+    </div>
     {% endblock %}
 </body>

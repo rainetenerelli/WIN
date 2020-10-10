@@ -12,6 +12,21 @@ HTML {
     margin-right: 20%;
 }
 
+hr.thin {
+    height: 2px;
+    border: 0;
+    color: var(--color-text);
+    background-color: var(--color-text);
+    width: 90%;
+    }
+
+.footer{
+    position: fixed; 
+    padding: 10px 10px 0px 10px; 
+    bottom: 0; 
+    margin-left: 10%;
+}
+
 .buttons{
     margin: 2rem;
     padding-top: 0px;
@@ -34,6 +49,7 @@ HTML {
 .topHeader {
     text-align: center;
 }
+
 
 .weaponHead, .weaponData {
     border: 1px solid #000000;
@@ -75,23 +91,18 @@ nav ul {
 
 nav button, nav a {
     display: block;
-    box-sizing: border-box;
     width: 9em;
     height: 50px;
     font-size: 15px;
-    margin-top: 15px;
-    background-color: var(--color-accent);
     color: var(--color-text);
     display: flex;
-    border: 1px solid #000000;
-    border-radius: 2px;
     text-align: center;
     text-decoration: none;
-    font-weight: bold;
+    font-weight: normal;
     align-items: center;
     justify-content: center;
 } 
 
 nav button:hover, button:focus, nav a:hover, nav a:focus {
-    background-color: var(--color-background);
+    font-weight: bolder;
 }
