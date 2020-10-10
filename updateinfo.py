@@ -21,7 +21,7 @@ def isWeaponAvailabe(conn, wid):
                      [wid])
     return res == 0
 
-#  Can use for dropdown
+#  Used for the dropdown menu for checking out weapons
 def getAllAvailableWeapons(conn):
     '''
     Return the wid, type, and condition of all weapons that are available to checkout of any type
@@ -36,10 +36,11 @@ def getAllAvailableWeapons(conn):
                   where checkindate is null)''')
     return curs.fetchall()
 
-#  Can use for dropdown, for checking in
+#  Used for the dropdown menu for the checkin form
 def getAllTakenWeapons(conn, username):
     '''
     Return the wid, type, and condition of all weapons that are available to checkin of any type
+    by specified user
     '''
     curs = dbi.dict_cursor(conn)
     curs.execute('''
@@ -90,7 +91,8 @@ def checkin(conn, wid, username, checkoutdate, checkindate, weaponCondition):
                 where wid=%s and username=%s and checkoutdate=%s''', 
                 [checkindate, wid, username, checkoutdate])
     conn.commit()
-    curs.execute('''
+    curs2 = dbi.cursor(conn)
+    curs2.execute('''
                 update weapons
                 set `condition`=%s
                 where wid=%s''', 
