@@ -79,7 +79,7 @@ def getCheckoutDate(conn, wid, username):
                 [wid, username])
     return curs.fetchone()['checkoutdate']
 
-def checkin(conn, wid, username, checkoutdate, checkindate):
+def checkin(conn, wid, username, checkoutdate, checkindate, weaponCondition):
     '''
     Update the checkout request with the checkin date
     '''
@@ -89,6 +89,12 @@ def checkin(conn, wid, username, checkoutdate, checkindate):
                 set checkindate=%s
                 where wid=%s and username=%s and checkoutdate=%s''', 
                 [checkindate, wid, username, checkoutdate])
+    conn.commit()
+    curs.execute('''
+                update weapons
+                set `condition`=%s
+                where wid=%s''', 
+                [weaponCondition, wid])
     conn.commit()
 
 def isMember(conn, username):

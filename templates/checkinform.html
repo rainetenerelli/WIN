@@ -26,10 +26,21 @@
         </select>
     </div>
 
-    <!--CHECK OUT DATE-->
+    <!--CHECK IN DATE-->
     <div>
-        <label for="checkindate">Current Date</label></td>
-        <input required id="checkindate" type="date" name="checkindate" placeholder="e.g. 2020-10-04"></td> 
+        <label for="checkindate">Current Date</label>
+        <input required id="checkindate" type="date" name="checkindate" placeholder="e.g. 2020-10-04">
+    </div>
+
+    <!--CONDITION 'good', 'moderate', 'bad'-->
+    <div>
+        <label>Condition: </label>
+        <input required id="good" type="radio" name="condition" value="good">
+        <label for="good">Good</label>
+        <input required id="moderate" type="radio" name="condition" value="moderate">
+        <label for="moderate">Moderate</label>
+        <input required id="bad" type="radio" name="condition" value="bad">
+        <label for="bad">Bad</label>
     </div>
 
     <!--SUBMIT DATE-->

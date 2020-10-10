@@ -125,9 +125,10 @@ def checkin():
             conn = dbi.connect()
             wid = request.form["wid"]
             checkindate = request.form["checkindate"]
+            weaponCon = request.form["condition"]
             checkoutdate = updateinfo.getCheckoutDate(conn, wid, username)
             try:
-                updateinfo.checkin(conn, wid, username, checkoutdate.strftime("%Y-%m-%d"), checkindate)
+                updateinfo.checkin(conn, wid, username, checkoutdate.strftime("%Y-%m-%d"), checkindate, weaponCon)
             except:
                 flash("Oh no! The checkin request failed")
                 taken = updateinfo.getAllTakenWeapons(conn, username)
