@@ -22,8 +22,12 @@
 
     {% block logout %}
         <form method="GET" action="{{url_for('cas.logout')}}">
-        <button>logout</button>
+            <button>logout</button>
         </form>
+    {% endblock %}
+
+    {% block logo %}
+    
     {% endblock %}
 
     {% block nav %}

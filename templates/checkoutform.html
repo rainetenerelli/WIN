@@ -17,7 +17,7 @@
 <form method=POST action="/checkout/">
     <!--WEAPON DROP DOWN-->
     <div>
-        <label for="wid">Weapon ID</label>
+        <label class="inputLabel" for="wid">Weapon ID</label>
         <select required id="wid" name="wid">
             <option value="select">--select--</option>
             {% for weapon in weapons: %}
@@ -28,7 +28,7 @@
 
     <!--CHECK OUT DATE-->
     <div>
-        <label for="checkoutdate">Current Date</label></td>
+        <label class="inputLabel" for="checkoutdate">Current Date</label></td>
         <input required id="checkoutdate" type="date" name="checkoutdate" placeholder="e.g. 2020-10-04"></td> 
     </div>
 

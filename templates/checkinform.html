@@ -16,8 +16,8 @@
 {% block main %}
 <form method=POST action="/checkin/">
     <!--WEAPON DROP DOWN-->
-    <div>
-        <label for="wid">Weapon ID</label>
+    <div class="checkininput">
+        <label class="inputLabel" for="wid">Weapon ID</label>
         <select required id="wid" name="wid">
             <option value="select">--select--</option>
             {% for weapon in weapons: %}
@@ -27,14 +27,14 @@
     </div>
 
     <!--CHECK IN DATE-->
-    <div>
-        <label for="checkindate">Current Date</label>
+    <div class="checkininput">
+        <label class="inputLabel" for="checkindate">Current Date</label>
         <input required id="checkindate" type="date" name="checkindate" placeholder="e.g. 2020-10-04">
     </div>
 
     <!--CONDITION 'good', 'moderate', 'bad'-->
-    <div>
-        <label>Condition: </label>
+    <div class="checkininput">
+        <label class="inputLabel">Condition: </label>
         <input required id="good" type="radio" name="condition" value="good">
         <label for="good">Good</label>
         <input required id="moderate" type="radio" name="condition" value="moderate">
@@ -44,7 +44,7 @@
     </div>
 
     <!--SUBMIT DATE-->
-    <div>
+    <div class="checkininput">
         <input type="submit" name="submit" value="Check In">
     </div>
 </form>
