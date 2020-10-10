@@ -1,0 +1,11 @@
+{% block nav %}
+<nav>
+  <ul>
+    <li><a href="{{url_for('index')}}">Home</a></li>
+    <li><a href="{{url_for('weapons')}}">Browse Weapons</a></li>
+    <li><a href="{{url_for('checkout')}}">Check Out a Weapon</a></li>
+    <li><a href="{{url_for('checkin')}}">Check In a Weapon</a></li>
+    <li><a href="{{url_for('upload_file')}}">Surprise for Scott</a></li>
+  </ul>
+</nav>
+{% endblock %}
