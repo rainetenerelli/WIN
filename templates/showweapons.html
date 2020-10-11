@@ -33,6 +33,7 @@
         <th class="weaponHead"><strong>Type</strong></th>
         <th class="weaponHead"><strong>Condition</strong></th>
     </tr>
+
     {% for weapon in allWeaponsList: %}
     <tr>
         <td class="weaponData">{{ weapon.wid }}</td>
@@ -40,5 +41,6 @@
         <td class="weaponData">{{ weapon.condition}}</td>
     </tr>
     {% endfor %}
+
 </table>
 {% endblock %}

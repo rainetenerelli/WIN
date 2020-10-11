@@ -14,6 +14,7 @@
 {% endblock %}
 
 {% block main %}
+<div class = "checkform">
 <form method=POST action="/checkin/">
     <!--WEAPON DROP DOWN-->
     <div class="checkininput">
@@ -45,8 +46,9 @@
 
     <!--SUBMIT DATE-->
     <div class="checkininput">
-        <input type="submit" name="submit" value="Check In">
+        <input class = "checkbutton" type="submit" name="submit" value="Check In">
     </div>
 </form>
+</div>
 
 {% endblock %}

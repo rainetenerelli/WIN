@@ -18,13 +18,44 @@ hr.thin {
     color: var(--color-text);
     background-color: var(--color-text);
     width: 90%;
+    margin-bottom: 50px;
     }
+
+.checkform{
+    background-color: var(--color-text);
+    color: var(--color-background);
+    border-radius: 10px;
+    margin-left: 20%;
+    margin-right: 20%;
+    font-weight: normal;
+}
+
+.checkbutton{
+    margin:20px;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+}
+
+button{
+    margin: 2rem;
+    background-color: var(--color-text);
+    border: none;
+    color: var(--color-background);
+    padding: 10px 20px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
 
 .footer{
     position: fixed; 
     padding: 10px 10px 0px 10px; 
     bottom: 0; 
     margin-left: 10%;
+    background-color: var(--color-background);
 }
 
 .buttons{
@@ -45,6 +76,10 @@ hr.thin {
     margin-left: 30%;
     margin-right: 30%;
   }
+
+    .btn:hover, .btn:focus {
+    background-color: #c64141;
+}
 
 .topHeader {
     text-align: center;
