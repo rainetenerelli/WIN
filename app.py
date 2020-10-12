@@ -95,7 +95,7 @@ def checkout():
 
             # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
             # just in case multiple users are checking weapons out at simultaneously
-            if not updateinfo.isWeaponAvailabe(conn, wid):
+            if not updateinfo.isWeaponAvailable(conn, wid):
                 flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
                 return render_template('checkoutform.html', weapons = available)
 

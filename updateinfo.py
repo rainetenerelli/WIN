@@ -8,7 +8,7 @@ Course: CS304 Fall T1 2020
 import cs304dbi as dbi
 
 # Used to validate if this weapon can be checked out
-def isWeaponAvailabe(conn, wid):
+def isWeaponAvailable(conn, wid):
     '''
     Return True if the weapon with wid is not checked out, False otherwise
     '''
