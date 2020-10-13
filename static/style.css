@@ -34,6 +34,10 @@ hr.thin {
     font-weight: normal;
 }
 
+.checkform label {
+    background-color: var(--color-text);
+}
+
 .checkbutton{
     margin:20px;
     background-color: var(--color-accent);
