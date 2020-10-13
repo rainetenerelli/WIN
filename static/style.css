@@ -12,10 +12,9 @@ HTML {
     margin-right: 20%;
 }
 
-h1, p, nav{
+h1, p, nav, label {
     background-color: var(--color-background);
 }
-
 
 hr.thin {
     height: 2px;
