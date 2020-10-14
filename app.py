@@ -51,7 +51,11 @@ def index():
         username = session['CAS_USERNAME']
         conn = dbi.connect()
         if updateinfo.isMember(conn, username):
-            return render_template('main.html', username=username)
+            if 'eboard' not in session: # we don't need to check again if we have already set the value for eboard
+                session['eboard'] = False
+                if updateinfo.isEboard(conn, username):
+                    session['eboard'] = True
+            return render_template('main.html', username=username, eboard=session['eboard'])
         else:
             flash("Sorry, {} is not in the list of members. Please talk to an eboard member to be added.".format(username))
     # if we reach here, no one is logged in or the member is not valid so redirect to login page
@@ -59,12 +63,11 @@ def index():
 
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
+    conn = dbi.connect()
     if request.method == 'GET':
-        conn = dbi.connect()
         allWeaponsList = filterweapons.getAllWeapons(conn)
         return render_template('showweapons.html', allWeaponsList = allWeaponsList)
     else:
-        conn = dbi.connect()
         filterType = request.form.get("weapon-type")
         filteredWeaponsList = []
         if filterType == "select" or filterType == "all":
@@ -75,14 +78,16 @@ def weapons():
     
 @app.route('/checkout/', methods=['GET','POST'])
 def checkout():
+    conn = dbi.connect()
     if request.method == 'GET':
-        conn = dbi.connect()
         available = updateinfo.getAllAvailableWeapons(conn)
         return render_template('checkoutform.html', weapons = available)
     else: # POST
-        if 'CAS_USERNAME' in session: # check to see if you are logged in
+        if 'CAS_USERNAME' not in session: # check to see if you are logged in
+            flash("Sorry, you are not logged in. Please log in before checking out a weapon.")
+            return redirect(url_for('index'))
+        else: # if not logged in
             username = session['CAS_USERNAME']
-            conn = dbi.connect()
 
             available = updateinfo.getAllAvailableWeapons(conn)
             # check to see if they selected a valid weapon
@@ -107,9 +112,6 @@ def checkout():
                 return render_template('checkoutform.html', weapons = available)
 
             flash("Weapon {} successfully checked out out by {}".format(wid, username))
-            return redirect(url_for('index'))
-        else: # if not logged in
-            flash("Sorry, you are not logged in. Please log in before checking out a weapon.")
             return redirect(url_for('index'))
         
 
@@ -147,12 +149,13 @@ def addmember():
     else: # POST
         conn = dbi.connect()
         name = request.form["newName"]
-        email = request.form["newEmail"]
+        username = request.form["newUsername"]
         try:
-            updateinfo.addMember(conn, email, name)
+            updateinfo.addMember(conn, username, name)
+            flash('Successfully added {} to the members database'.format(username))
         except:
             flash("Oops! This member could not be added. They may already be in the database.")
-        return redirect(url_for('checkout'))
+        return redirect(url_for('index'))
 
 @app.route('/images/')
 def images():

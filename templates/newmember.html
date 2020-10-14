@@ -5,20 +5,27 @@
     <meta name="description" content="Adds new user to program.">
 {% endblock %}
 
+{% block nav %}
+{% include "navbar.html" %}
+{% endblock %}
+
 {% block top %}
-    <h1 class="topHeader">Create Your Account</h1>
+    <h1 class="topHeader">Add a New Member</h1>
+    <p>We love our wubies!!!</p>
 {% endblock %}
 
 {% block main %}
-    <form method="POST" style="text-align: center;" action="/addmember/">
+<div class = "checkform">
+    <form method="POST" style="text-align: center;" action="{{url_for('addmember')}}">
         <div style="padding-bottom: 5px;">
-            <label for="newName"><strong>Enter your name: </strong></label>
+            <label for="newName"><strong>Name: </strong></label>
             <input required id="newName" type="text" name="newName" placeholder="e.g. Wendy Wellesley">
         </div>
         <div style="padding-bottom: 10px;">
-            <label for="newEmail"><strong>Enter your Wellesley email: </strong></label>
-            <input required id="newEmail" type="text" name="newEmail" placeholder="e.g. wwellesley@wellesley.edu">
+            <label for="newUsername"><strong>Username: </strong></label>
+            <input required id="newUsername" type="text" name="newUsername" placeholder="e.g. wwellesley">
         </div>
-        <input type="submit" value="Create Account">
+        <input class = "checkbutton" type="submit" value="Create Account">
     </form>
+</div>
 {% endblock %}

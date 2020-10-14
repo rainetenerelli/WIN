@@ -15,7 +15,7 @@
 
 {% block main %}
 <div class = "checkform">
-<form method=POST action="/checkout/">
+<form method=POST action="{{url_for('checkout')}}">
     <!--WEAPON DROP DOWN-->
     <div>
         <label class="inputLabel" for="wid">Weapon ID</label>

@@ -107,4 +107,19 @@ def isMember(conn, username):
     res = curs.execute('''select username from members where username=%s''', [username])
     return res > 0
 
-        
+def isEboard(conn, username):
+    '''
+    Returns True if there is an eboard member with the specified username, False otherwise
+    '''
+    curs = dbi.cursor(conn)
+    res = curs.execute('''select username from eboard where username=%s''', [username])
+    return res > 0
+
+def addMember(conn, username, name):
+    '''	  
+    Add a new member to the members table	 
+    '''	   
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''insert into members(username, name)
+                     values (%s, %s)''', [username, name])
+    conn.commit()	  

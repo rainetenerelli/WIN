@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block main %}
-<form method="POST" action="/weapons/" style="text-align: center; padding-bottom: 5px;">
+<form method="POST" action="{{url_for('weapons')}}" style="text-align: center; padding-bottom: 5px;">
     <label for="filter-label">Filter by: </label>
     <select name="weapon-type" >
         <option value="select">--select--</option>
