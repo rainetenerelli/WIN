@@ -144,6 +144,11 @@ def checkin():
 
 @app.route('/addmember/', methods=['GET','POST'])
 def addmember():
+    if 'eboard' not in session or not session['eboard']: 
+        flash("You are not authorized to access the add member page")
+        return redirect(url_for('index'))
+
+    # If they reach here, the user is an eboard member
     if request.method == 'GET':
         return render_template('newmember.html')
     else: # POST
