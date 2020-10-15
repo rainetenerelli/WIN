@@ -32,15 +32,38 @@
         <th class="weaponHead"><strong>ID</strong></th>
         <th class="weaponHead"><strong>Type</strong></th>
         <th class="weaponHead"><strong>Condition</strong></th>
+        {% if isEboard %}
+        <th class="weaponHead"><strong>Delete</strong></th>
+        {% endif %}
     </tr>
 
     {% for weapon in allWeaponsList: %}
-    <tr>
+    <tr wid={{weapon.wid}}>
         <td class="weaponData">{{ weapon.wid }}</td>
         <td class="weaponData">{{ weapon.type }}</td>
         <td class="weaponData">{{ weapon.condition}}</td>
+        {% if isEboard %}
+        <td class="weaponData delete">X</td>
+        {% endif %}
     </tr>
     {% endfor %}
 
 </table>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script> 
+var URL = "{{url_for('deleteWeaponAjax')}}";
+$("#weaponTable").on("click",".delete",function (event) { 
+    if( event.target != this) return; 
+    var wid = $(this).closest('[wid]').attr('wid');
+    $.post(URL, {'wid':wid}, delete_row, "JSON");  
+ });
+
+function delete_row(obj) {
+    wid = obj.wid;
+    $("[wid = "+wid+"]").find(".delete").text("deleted");
+}
+
+</script>
+
+
 {% endblock %}

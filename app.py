@@ -64,9 +64,10 @@ def index():
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
     conn = dbi.connect()
+    isEboard = 'eboard' in session or session['eboard']
     if request.method == 'GET':
         allWeaponsList = filterweapons.getAllWeapons(conn)
-        return render_template('showweapons.html', allWeaponsList = allWeaponsList)
+        return render_template('showweapons.html', allWeaponsList = allWeaponsList, isEboard = isEboard)
     else:
         filterType = request.form.get("weapon-type")
         filteredWeaponsList = []
@@ -74,7 +75,7 @@ def weapons():
             filteredWeaponsList = filterweapons.getAllWeapons(conn)
         else:
             filteredWeaponsList = filterweapons.filterByType(conn, filterType)
-        return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
+        return render_template('showweapons.html', allWeaponsList = filteredWeaponsList, isEboard = isEboard)
     
 @app.route('/checkout/', methods=['GET','POST'])
 def checkout():
@@ -192,6 +193,25 @@ def upload_file():
 @app.route('/images/<filename>')
 def upload(filename):
     return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
+
+@app.route('/deleteWeaponAjax/', methods=['POST'])
+def deleteWeaponAjax():
+    if 'eboard' not in session or not session['eboard']: 
+        flash("You are not authorized to delete a weapon")
+        return redirect(url_for('index'))
+
+    # If they reach here, the user is an eboard member
+    conn = dbi.connect()
+    wid = request.form["wid"]
+    try:
+        filterweapons.removeWeapon(conn, wid)
+        flash('Successfully deleted weapon {} from the database'.format(wid))
+        return jsonify({'error': False, 'wid': wid})
+    except Exception as err:
+        flash("Oops! This weapon could not be deleted.")
+        return jsonify({'error': True, 'err': str(err)}) 
+    
 
 @app.before_first_request
 def init_db():

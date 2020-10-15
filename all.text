@@ -1,0 +1,810 @@
+====================== app.py =====================
+'''
+Project: Wushu Inventory Ninja
+Project Description: Weapons Database for Wellesley Wushu
+Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
+Course: CS304 Fall T1 2020
+'''
+
+from flask import (Flask, render_template, make_response, url_for, request,
+                   redirect, flash, session, send_from_directory, jsonify,
+                   abort)
+from werkzeug.utils import secure_filename
+from os import listdir
+import cs304dbi as dbi
+import filterweapons
+import updateinfo
+import random
+
+
+app = Flask(__name__)
+app.config['UPLOAD_PATH'] = 'static/images'
+app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.jpeg']
+app.config['MAX_CONTENT_LENGTH'] = 2048 * 2048
+
+app.secret_key = 'uwu'
+app.secret_key = ''.join([ random.choice(('ABCDEFGHIJKLMNOPQRSTUVXYZ' +
+                                          'abcdefghijklmnopqrstuvxyz' +
+                                          '0123456789'))
+                           for i in range(20) ])
+
+# This gets us better error messages for certain common request errors
+app.config['TRAP_BAD_REQUEST_ERRORS'] = True
+
+# CAS setup
+from flask_cas import CAS
+
+CAS(app)
+
+app.config['CAS_SERVER'] = 'https://login.wellesley.edu:443'
+app.config['CAS_LOGIN_ROUTE'] = '/module.php/casserver/cas.php/login'
+app.config['CAS_LOGOUT_ROUTE'] = '/module.php/casserver/cas.php/logout'
+app.config['CAS_VALIDATE_ROUTE'] = '/module.php/casserver/serviceValidate.php'
+app.config['CAS_AFTER_LOGIN'] = 'logged_in'
+
+@app.route('/logged_in/')
+def logged_in():
+    return redirect(url_for('index'))
+
+@app.route('/')
+def index():
+    if 'CAS_USERNAME' in session:
+        username = session['CAS_USERNAME']
+        conn = dbi.connect()
+        if updateinfo.isMember(conn, username):
+            return render_template('main.html', username=username)
+        else:
+            flash("Sorry, {} is not in the list of members. Please talk to an eboard member to be added.".format(username))
+    # if we reach here, no one is logged in or the member is not valid so redirect to login page
+    return render_template('login.html')
+
+@app.route('/weapons/', methods=['GET','POST'])
+def weapons():
+    if request.method == 'GET':
+        conn = dbi.connect()
+        allWeaponsList = filterweapons.getAllWeapons(conn)
+        return render_template('showweapons.html', allWeaponsList = allWeaponsList)
+    else:
+        conn = dbi.connect()
+        filterType = request.form.get("weapon-type")
+        filteredWeaponsList = []
+        if filterType == "select" or filterType == "all":
+            filteredWeaponsList = filterweapons.getAllWeapons(conn)
+        else:
+            filteredWeaponsList = filterweapons.filterByType(conn, filterType)
+        return render_template('showweapons.html', allWeaponsList = filteredWeaponsList)
+    
+@app.route('/checkout/', methods=['GET','POST'])
+def checkout():
+    if request.method == 'GET':
+        conn = dbi.connect()
+        available = updateinfo.getAllAvailableWeapons(conn)
+        return render_template('checkoutform.html', weapons = available)
+    else: # POST
+        if 'CAS_USERNAME' in session: # check to see if you are logged in
+            username = session['CAS_USERNAME']
+            conn = dbi.connect()
+
+            available = updateinfo.getAllAvailableWeapons(conn)
+            # check to see if they selected a valid weapon
+            if request.form["wid"] == "select":
+                flash("You did not select a weapon. Please make sure to fill out all fields before submitting.")
+                return render_template('checkoutform.html', weapons = available)
+            
+            wid = request.form["wid"]
+            checkoutdate = request.form["checkoutdate"]
+
+            # Validate wid: if the weapon is already checked out, flash an error and rerender the checkoutform
+            # just in case multiple users are checking weapons out at simultaneously
+            if not updateinfo.isWeaponAvailabe(conn, wid):
+                flash("Weapon {} is already checked out. Please select a different weapon.".format(wid))
+                return render_template('checkoutform.html', weapons = available)
+
+            try:
+                updateinfo.checkout(conn, wid, username, checkoutdate)
+            except:
+                # Flash an error and rerender checkout form if the checkout fails
+                flash("Uh oh! Updating the checkout failed.")
+                return render_template('checkoutform.html', weapons = available)
+
+            flash("Weapon {} successfully checked out out by {}".format(wid, username))
+            return redirect(url_for('index'))
+        else: # if not logged in
+            flash("Sorry, you are not logged in. Please log in before checking out a weapon.")
+            return redirect(url_for('index'))
+        
+
+@app.route('/checkin/', methods=['GET','POST'])
+def checkin():
+    if 'CAS_USERNAME' in session: # check to see if you are logged in
+        username = session['CAS_USERNAME']
+        if request.method == 'GET':
+            conn = dbi.connect()
+            taken = updateinfo.getAllTakenWeapons(conn, username)
+            return render_template('checkinform.html', weapons = taken)
+        else: # POST
+            conn = dbi.connect()
+            wid = request.form["wid"]
+            checkindate = request.form["checkindate"]
+            weaponCon = request.form["condition"]
+            checkoutdate = updateinfo.getCheckoutDate(conn, wid, username)
+            try:
+                updateinfo.checkin(conn, wid, username, checkoutdate.strftime("%Y-%m-%d"), checkindate, weaponCon)
+            except:
+                flash("Oh no! The checkin request failed")
+                taken = updateinfo.getAllTakenWeapons(conn, username)
+                return render_template('checkinform.html', weapons = taken)
+
+            flash("Sucessessfully checked in weapon {}". format(wid))
+            return redirect(url_for('index'))
+    else: # if not logged in
+        flash("Sorry, you are not logged in. Please log in before checking in a weapon.")
+        return redirect(url_for('index'))
+
+@app.route('/addmember/', methods=['GET','POST'])
+def addmember():
+    if request.method == 'GET':
+        return render_template('newmember.html')
+    else: # POST
+        conn = dbi.connect()
+        name = request.form["newName"]
+        email = request.form["newEmail"]
+        try:
+            updateinfo.addMember(conn, email, name)
+        except:
+            flash("Oops! This member could not be added. They may already be in the database.")
+        return redirect(url_for('checkout'))
+
+@app.route('/images/')
+def images():
+   image_arr = os.listdir(app.config['UPLOAD_PATH'])
+   return render_template('images.html', image_arr = image_arr)
+	
+@app.route('/images/', methods = ['POST'])
+def upload_file():
+    uploaded_file = request.files['image_file']
+    filename = secure_filename(uploaded_file.filename)
+    image_arr = os.listdir(app.config['UPLOAD_PATH'])
+    # check that image exists
+    if filename != '':
+        file_ext = os.path.splitext(filename)[1]
+        if file_ext not in app.config['UPLOAD_EXTENSIONS']:
+            # checking if valid extension
+            flash("Not a valid upload. Must be .jpg .png or .jpeg")
+            return render_template('images.html', image_arr = image_arr)
+        # checking if image already exists
+        if filename in image_arr:
+            flash("This image name is already in use. You might be trying to " + 
+            "upload an existing image.")
+            return render_template('images.html', image_arr = image_arr)
+        # save image
+        uploaded_file.save(os.path.join(app.config['UPLOAD_PATH'], filename))
+        flash("Image sucessfully uploaded. Yeehaw.")
+    return redirect(url_for('images'))
+
+@app.route('/images/<filename>')
+def upload(filename):
+    return send_from_directory(app.config['UPLOAD_PATH'], filename)
+
+@app.before_first_request
+def init_db():
+    dbi.cache_cnf()
+    dbi.use('uwushu_db')
+
+if __name__ == '__main__':
+    import sys, os
+
+    if len(sys.argv) > 1:
+        port=int(sys.argv[1])
+        if not(1943 <= port <= 1952):
+            print('For CAS, choose a port from 1943 to 1952')
+            sys.exit()
+    else:
+        port=os.getuid()
+    app.debug = True
+    app.run('0.0.0.0',port)
+
+====================== filterweapons.py =====================
+'''
+Project: Wushu Inventory Ninja
+Project Description: Weapons Database for Wellesley Wushu
+Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
+Course: CS304 Fall T1 2020
+'''
+
+import cs304dbi as dbi
+
+def getAllWeapons(conn):
+    '''
+    Returns the wid, type, and condition of all weapons
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''select wid,type,`condition` from weapons''')
+    return curs.fetchall()
+
+def filterByType(conn, type):
+    '''
+    Returns the wid, type, and condition of weapons of the specified type
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        select wid,type,`condition` 
+        from weapons 
+        where type=%s''',
+                 [type])
+    return curs.fetchall()
+
+====================== updateinfo.py =====================
+'''
+Project: Wushu Inventory Ninja
+Project Description: Weapons Database for Wellesley Wushu
+Authors: Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang
+Course: CS304 Fall T1 2020
+'''
+
+import cs304dbi as dbi
+
+# Used to validate if this weapon can be checked out
+def isWeaponAvailabe(conn, wid):
+    '''
+    Return True if the weapon with wid is not checked out, False otherwise
+    '''
+    curs = dbi.cursor(conn)
+    # Check if the weapon is currently checked out
+    res = curs.execute('''
+                        select wid 
+                        from checkedout 
+                        where checkindate is null and wid=%s''',
+                     [wid])
+    return res == 0
+
+#  Used for the dropdown menu for checking out weapons
+def getAllAvailableWeapons(conn):
+    '''
+    Return the wid, type, and condition of all weapons that are available to checkout of any type
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+                select wid,type,`condition`
+                from weapons 
+                where wid not in
+                 (select wid
+                  from checkedout
+                  where checkindate is null)''')
+    return curs.fetchall()
+
+#  Used for the dropdown menu for the checkin form
+def getAllTakenWeapons(conn, username):
+    '''
+    Return the wid, type, and condition of all weapons that are available to checkin of any type
+    by specified user
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+                select wid,type,`condition`
+                from weapons 
+                where wid in
+                 (select wid
+                  from checkedout 
+                  where checkindate is null and username = %s)''',
+                [username])
+    return curs.fetchall()
+
+def checkout(conn, wid, username, checkoutdate):
+    '''
+    Update the checkout table with the new checkout info
+    '''
+    curs = dbi.cursor(conn)
+    try:
+        print(str(wid) + ' ' + username + ' ' + checkoutdate)
+        curs.execute('''
+                    insert into checkedout(wid, username, checkoutdate)
+                    values (%s, %s, %s)''', 
+                    [wid, username, checkoutdate])
+        conn.commit()
+    except:
+        print("Uh oh! Adding the checkout information failed.")
+
+def getCheckoutDate(conn, wid, username):
+    '''
+    Get the checkout date of an (unreturned) request for a member
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+                select checkoutdate
+                from checkedout 
+                where wid=%s and username=%s and checkindate is null''',
+                [wid, username])
+    return curs.fetchone()['checkoutdate']
+
+def checkin(conn, wid, username, checkoutdate, checkindate, weaponCondition):
+    '''
+    Update the checkout request with the checkin date
+    '''
+    curs = dbi.cursor(conn)
+    curs.execute('''
+                update checkedout
+                set checkindate=%s
+                where wid=%s and username=%s and checkoutdate=%s''', 
+                [checkindate, wid, username, checkoutdate])
+    conn.commit()
+    curs2 = dbi.cursor(conn)
+    curs2.execute('''
+                update weapons
+                set `condition`=%s
+                where wid=%s''', 
+                [weaponCondition, wid])
+    conn.commit()
+
+def isMember(conn, username):
+    '''
+    Returns True if there is a member with the specified username, False otherwise
+    '''
+    curs = dbi.cursor(conn)
+    res = curs.execute('''select username from members where username=%s''', [username])
+    return res > 0
+
+        
+====================== *.sql =====================
+
+====================== templates/base.html =====================
+<!DOCTYPE html>
+<head lang="en">
+    <meta charset="utf-8">
+    <meta name="author" content="Eugenia, Elaney, Christine, and Raine">
+
+    <link rel='stylesheet' type= "text/css" href="{{url_for('static', filename = 'style.css')}}"/>
+    
+    {% block head_stuff %} 
+    {% endblock %}
+</head>
+
+<body>
+    {% block nav %}
+    {% endblock %}
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div id="messages">
+                {% for msg in messages %}
+                    <p>{{msg}}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block logo %}
+    
+    {% endblock %}
+
+    {% block top %}
+    {% endblock %}
+
+    {% block main %}
+    {% endblock %}
+
+
+
+    {% block foot %}
+    {% block logout %}
+    <div class = "footer">
+    <form class = "method="GET" action="{{url_for('cas.logout')}}">
+        <button class = "logoutButton">logout</button>
+    </form>
+    {% endblock %}
+    <p>
+        &copy 2020 - Elaney Cheng, Christine Lam, Raine Tenerelli, Eugenia Zhang <br>
+        Special thanks to Scott Anderson for being an amazing professor!
+    </p>
+    </div>
+    {% endblock %}
+</body>
+
+====================== templates/checkinform.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff %} 
+    <title>Check In Weapon</title>
+    <meta name="description" content="Form allows you to check in your weapon">
+{% endblock %}
+
+{% block nav %}
+{% include "navbar.html" %}
+{% endblock %}
+
+{% block top %}
+    <h1 class="topHeader">Check In Your Weapon</h1>
+{% endblock %}
+
+{% block main %}
+<div class = "checkform">
+<form method=POST action="/checkin/">
+    <!--WEAPON DROP DOWN-->
+    <div class="checkininput">
+        <label class="inputLabel" for="wid">Weapon ID</label>
+        <select required id="wid" name="wid">
+            <option value="select">--select--</option>
+            {% for weapon in weapons: %}
+                <option value="{{ weapon.wid }}">{{ weapon.wid }} {{ weapon.type }} {{ weapon.condition }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!--CHECK IN DATE-->
+    <div class="checkininput">
+        <label class="inputLabel" for="checkindate">Current Date</label>
+        <input required id="checkindate" type="date" name="checkindate" placeholder="e.g. 2020-10-04">
+    </div>
+
+    <!--CONDITION 'good', 'moderate', 'bad'-->
+    <div class="checkininput">
+        <label class="inputLabel">Condition: </label>
+        <input required id="good" type="radio" name="condition" value="good">
+        <label for="good">Good</label>
+        <input required id="moderate" type="radio" name="condition" value="moderate">
+        <label for="moderate">Moderate</label>
+        <input required id="bad" type="radio" name="condition" value="bad">
+        <label for="bad">Bad</label>
+    </div>
+
+    <!--SUBMIT DATE-->
+    <div class="checkininput">
+        <input class = "checkbutton" type="submit" name="submit" value="Check In">
+    </div>
+</form>
+</div>
+
+{% endblock %}
+
+====================== templates/checkoutform.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff %} 
+    <title>Check Out Weapon</title>
+    <meta name="description" content="Form allows you to check out your weapon">
+{% endblock %}
+
+{% block nav %}
+{% include "navbar.html" %}
+{% endblock %}
+
+{% block top %}
+    <h1 class="topHeader">Check Out Your Weapon</h1>
+{% endblock %}
+
+{% block main %}
+<div class = "checkform">
+<form method=POST action="/checkout/">
+    <!--WEAPON DROP DOWN-->
+    <div>
+        <label class="inputLabel" for="wid">Weapon ID</label>
+        <select required id="wid" name="wid">
+            <option value="select">--select--</option>
+            {% for weapon in weapons: %}
+                <option value="{{ weapon.wid }}">{{ weapon.wid }} {{ weapon.type }} {{ weapon.condition }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!--CHECK OUT DATE-->
+    <div>
+        <label class="inputLabel" for="checkoutdate">Current Date</label></td>
+        <input required id="checkoutdate" type="date" name="checkoutdate" placeholder="e.g. 2020-10-04"></td> 
+    </div>
+
+    <!--SUBMIT DATE-->
+    <div>
+        <input class = "checkbutton" type="submit" name="submit" value="Check Out">
+    </div>
+</form>
+</div>
+{% endblock %}
+
+====================== templates/images.html =====================
+{% extends "base.html" %}
+
+{% block nav %}
+{% include "navbar.html" %}
+{% endblock %}
+
+{% block head_stuff %} 
+    <title>Zoom Backgrounds for T1 Fall 2020 CS304</title>
+    <meta name="description" content="Upload and display zoom backgrounds.">
+{% endblock %}
+
+{% block top %}
+
+{% endblock %}
+
+{% block main %}
+
+<html>
+   <body>
+      <form action = "" method = "POST" 
+         enctype = "multipart/form-data">
+         <input type="file" name="image_file" accept="image/*">
+         <input type = "submit"/>
+      </form>
+   </body>
+</html>
+
+{% for image in image_arr %}
+    <br>
+    <img src="{{url_for('upload', filename=image)}}" alt="Scott's face photoshopped onto a funny image ({{image}})" width = 640 height = 360 >
+    <br>
+{% endfor %}
+
+{% endblock %}
+====================== templates/login.html =====================
+{% extends "base.html" %}
+
+    {% block top %}
+    <h1 class="topHeader">Login Page</h1>
+    {% endblock %}
+
+    {% block logout %}
+    {% endblock %}
+
+    {% block nav %}
+    {% endblock %}
+
+    {% block main %}
+    <form method="GET" action="{{url_for('cas.login')}}">
+        <button>login</button>
+    </form>
+    {% endblock %}
+====================== templates/main.html =====================
+{% extends "base.html" %}
+
+    {% block head_stuff %} 
+    <title>WIN home page</title>
+    <meta name="description" content="home page for WIN">
+    {% endblock %}
+
+    {% block main %}
+    <h1> Welcome, {{username}}! </h1>
+
+    <p>Welcome to WIN, the Wushu Inventory Ninja! <br> You can use me to manage your 
+        weapons and look at all of the cool weapons wushu has to offer. <br><br>
+        <b>What would you like to do today?</b> </p>
+
+    <div class = "buttons">
+        <a href="{{url_for('weapons')}}" class="btn">Browse Weapons</a>
+        <a href="{{url_for('checkout')}}" class="btn">Check Out Weapon</a>
+        <a href="{{url_for('checkin')}}" class="btn">Check In Weapon</a>
+        <a href="{{url_for('upload_file')}}" class="btn">Surprise for Scott!</a>
+    </div>
+
+    {% endblock %}
+====================== templates/navbar.html =====================
+{% block nav %}
+<nav>
+  <ul>
+    <li><a id="homeTxt" href="{{url_for('index')}}">Home</a></li>
+    <li><a href="{{url_for('weapons')}}">Browse</a></li>
+    <li> <img src="../static/wanda.png" alt="Wanda the WINja" width = 60 height = 60 ></li>
+    <li><a href="{{url_for('checkout')}}">Check Out</a></li>
+    <li><a href="{{url_for('checkin')}}">Check In</a></li>
+  </ul>
+  <hr class = "thin"></div>
+</nav>
+{% endblock %}
+====================== templates/newmember.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff %} 
+    <title>New Member</title>
+    <meta name="description" content="Adds new user to program.">
+{% endblock %}
+
+{% block top %}
+    <h1 class="topHeader">Create Your Account</h1>
+{% endblock %}
+
+{% block main %}
+    <form method="POST" style="text-align: center;" action="/addmember/">
+        <div style="padding-bottom: 5px;">
+            <label for="newName"><strong>Enter your name: </strong></label>
+            <input required id="newName" type="text" name="newName" placeholder="e.g. Wendy Wellesley">
+        </div>
+        <div style="padding-bottom: 10px;">
+            <label for="newEmail"><strong>Enter your Wellesley email: </strong></label>
+            <input required id="newEmail" type="text" name="newEmail" placeholder="e.g. wwellesley@wellesley.edu">
+        </div>
+        <input type="submit" value="Create Account">
+    </form>
+{% endblock %}
+====================== templates/showweapons.html =====================
+{% extends "base.html" %}
+
+{% block head_stuff %} 
+    <title>Weapons</title>
+    <meta name="description" content="Displays all weapons and allows filtering">
+{% endblock %}
+
+{% block nav %}
+{% include "navbar.html" %}
+{% endblock %}
+
+{% block top %}
+    <h1 class="topHeader">Weapons</h1>
+{% endblock %}
+
+{% block main %}
+<form method="POST" action="/weapons/" style="text-align: center; padding-bottom: 5px;">
+    <label for="filter-label">Filter by: </label>
+    <select name="weapon-type" >
+        <option value="select">--select--</option>
+        <option value="all">All Weapons</option>
+        <option value="broadsword">Broadsword</option>
+        <option value="chain">Chain</option>
+        <option value="fan">Fan</option>
+        <option value="staff">Staff</option>
+        <option value="straightsword">Straightsword</option>
+    </select>
+    <input type="submit" value="Apply">
+</form>
+<table id="weaponTable">
+    <tr>
+        <th class="weaponHead"><strong>ID</strong></th>
+        <th class="weaponHead"><strong>Type</strong></th>
+        <th class="weaponHead"><strong>Condition</strong></th>
+    </tr>
+
+    {% for weapon in allWeaponsList: %}
+    <tr>
+        <td class="weaponData">{{ weapon.wid }}</td>
+        <td class="weaponData">{{ weapon.type }}</td>
+        <td class="weaponData">{{ weapon.condition}}</td>
+    </tr>
+    {% endfor %}
+
+</table>
+{% endblock %}
+====================== static/*.js =====================
+
+====================== static/style.css =====================
+HTML {
+    --color-background: #302C2B; 
+    --color-accent: #BB3B3B;
+    --color-text: #FFF2EF;
+    --font-family: Helvetica;
+
+    font-family: var(--font-family);
+    background-color: var(--color-background);
+    text-align: center;
+    color: var(--color-text);
+    margin-left: 20%;
+    margin-right: 20%;
+}
+
+hr.thin {
+    height: 2px;
+    border: 0;
+    color: var(--color-text);
+    background-color: var(--color-text);
+    width: 90%;
+    margin-bottom: 50px;
+    }
+
+.checkform{
+    background-color: var(--color-text);
+    color: var(--color-background);
+    border-radius: 10px;
+    margin-left: 20%;
+    margin-right: 20%;
+    font-weight: normal;
+}
+
+.checkbutton{
+    margin:20px;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+}
+
+button{
+    margin: 2rem;
+    background-color: var(--color-text);
+    border: none;
+    color: var(--color-background);
+    padding: 10px 20px;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.footer{
+    position: fixed; 
+    padding: 10px 10px 0px 10px; 
+    bottom: 0; 
+    width: 850px;
+    background-color: var(--color-background);
+}
+
+.buttons{
+    margin: 2rem;
+    padding-top: 0px;
+}
+
+.btn:visited, .btn:link {
+    display: block;
+    font-size: 20px;
+    margin-top:30px;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    padding: 20px 22px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    margin-left: 30%;
+    margin-right: 30%;
+  }
+
+    .btn:hover, .btn:focus {
+    background-color: #c64141;
+}
+
+.topHeader {
+    text-align: center;
+}
+
+
+.weaponHead, .weaponData {
+    border: 1px solid #000000;
+    text-align: left;
+    padding: 8px;
+}
+
+#weaponTable {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+div {
+    display: block;
+    padding-top:20px;
+}
+
+.inputLabel {
+    font-weight: bold;
+}
+
+nav > ul {
+    justify-content: center;
+    margin-left:-40px;
+    display: flex;
+    flex-direction: row;
+}
+
+nav > ul > li{
+    padding-left:10px;
+    padding-right:10px;
+    display: flex;
+    flex-direction: row;
+}
+
+nav ul {
+    list-style-type: none;
+}
+
+nav button, nav a {
+    display: block;
+    width: 9em;
+    height: 50px;
+    font-size: 15px;
+    color: var(--color-text);
+    display: flex;
+    text-align: center;
+    text-decoration: none;
+    font-weight: normal;
+    align-items: center;
+    justify-content: center;
+} 
+
+nav button:hover, button:focus, nav a:hover, nav a:focus {
+    font-weight: bolder;
+}
+
