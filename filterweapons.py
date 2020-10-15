@@ -26,3 +26,13 @@ def filterByType(conn, type):
         where type=%s''',
                  [type])
     return curs.fetchall()
+
+def removeWeapon(conn, wid): 
+    '''
+    Removes the weapon using the specified weapon ID
+    '''
+    curs = dbi.dict_cursor(conn)
+    curs.execute('''
+        delete from weapons where wid =%s
+            ''', [wid])
+    conn.commit()
