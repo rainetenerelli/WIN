@@ -64,7 +64,7 @@ def index():
 @app.route('/weapons/', methods=['GET','POST'])
 def weapons():
     conn = dbi.connect()
-    isEboard = 'eboard' in session or session['eboard']
+    isEboard = not('eboard' not in session or not session['eboard'])
     if request.method == 'GET':
         allWeaponsList = filterweapons.getAllWeapons(conn)
         return render_template('showweapons.html', allWeaponsList = allWeaponsList, isEboard = isEboard)
@@ -204,13 +204,18 @@ def deleteWeaponAjax():
     # If they reach here, the user is an eboard member
     conn = dbi.connect()
     wid = request.form["wid"]
-    try:
-        filterweapons.removeWeapon(conn, wid)
-        flash('Successfully deleted weapon {} from the database'.format(wid))
-        return jsonify({'error': False, 'wid': wid})
-    except Exception as err:
-        flash("Oops! This weapon could not be deleted.")
-        return jsonify({'error': True, 'err': str(err)}) 
+    isWeaponAvailable = updateinfo.isWeaponAvailable(conn, wid)
+    if (isWeaponAvailable):
+        try:
+            filterweapons.removeWeapon(conn, wid)
+            flash('Successfully deleted weapon {} from the database'.format(wid))
+            return jsonify({'error': False, 'wid': wid})
+        except Exception as err:
+            flash('Oops! This weapon could not be deleted. Unknown Error.')
+            return jsonify({'error': True, 'err': str(err)}) 
+    else:
+        flash('Oops! Weapon {} could not be deleted. It is already checked out.'.format(wid))
+        return jsonify({'error': True}) 
     
 
 @app.before_first_request
