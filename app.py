@@ -214,7 +214,7 @@ def deleteWeaponAjax():
             flash('Oops! This weapon could not be deleted. Unknown Error.')
             return jsonify({'error': True, 'err': str(err)}) 
     else:
-        flash('Oops! Weapon {} could not be deleted. It is already checked out.'.format(wid))
+        flash('Oops! Weapon {} could not be deleted. It is currently checked out.'.format(wid))
         return jsonify({'error': True}) 
     
 
