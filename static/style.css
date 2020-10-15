@@ -16,6 +16,10 @@ h1, p, nav, label {
     background-color: var(--color-background);
 }
 
+body{
+    flex: 1;
+}
+
 hr.thin {
     height: 2px;
     border: 0;
@@ -59,10 +63,9 @@ button{
 }
 
 .footer{
-    position: fixed; 
-    padding: 10px 10px 0px 10px; 
-    bottom: 0; 
-    width: 850px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     background-color: var(--color-background);
 }
 
